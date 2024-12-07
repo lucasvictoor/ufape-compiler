@@ -23,7 +23,6 @@ public class App {
         }
 
         // Exibe a tabela de símbolos
-        System.out.println("\nTabela de Simbolos:");
         System.out.println(lexer.getSymbolTable());
     }
 }

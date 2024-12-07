@@ -26,7 +26,7 @@ public class SymbolTable {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder("Tabela de Simbolos:\n");
+        StringBuilder sb = new StringBuilder("\nTabela de Simbolos:\n");
         for (SymbolTableEntry entry : table.values()) {
             sb.append(entry).append("\n");
         }
