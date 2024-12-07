@@ -130,7 +130,7 @@ public class Lexer {
         // codigo.substring(posicao).matches("function#|procedure#|[a-zA-Z_][a-zA-Z0-9_]*"))
         // isMatch("function#|procedure#|[a-zA-Z_][a-zA-Z0-9_]*", codigo.charAt(posicao))
         // (Character.isLetterOrDigit(codigo.charAt(posicao)) || codigo.charAt(posicao) == '_')
-        while (posicao < codigo.length() && isMatch("[a-zA-Z_][a-zA-Z0-9_#]*", codigo.charAt(posicao))) {
+        while (posicao < codigo.length() && isMatch("[a-zA-Z_0-9#]", codigo.charAt(posicao))) {
             //System.out.println("Identificador antes: " + identificador);
             identificador.append(codigo.charAt(posicao));
             //System.out.println("Identificador pós append: " + identificador);
@@ -152,7 +152,7 @@ public class Lexer {
 
     private TokenType.TokenReserved getTokenReservado(String id) {
         try {
-            return TokenType.TokenReserved.valueOf(id.toUpperCase());
+            return TokenType.TokenReserved.valueOf(id.toUpperCase().replace("#", "_"));
         } catch (IllegalArgumentException e) {
             return null;
         }
