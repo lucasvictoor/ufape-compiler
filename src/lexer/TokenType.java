@@ -3,7 +3,7 @@ package lexer;
 public class TokenType {
 
     public enum TokenReserved {
-        BEGIN, END, VAR, INTEGER, BOOLEAN, DEF, DO, RETURN, IF, ELSE, WHILE, PRINT, FUNCTION, PROCEDURE, CONTINUE, BREAK, TRUE, FALSE;
+        BEGIN, END, VAR, INTEGER, BOOLEAN, DEF, DO, RETURN, IF, ELSE, WHILE, PRINT, FUNCTION, PROCEDURE, CONTINUE, BREAK, TRUE, FALSE, MODELO, VOID;
     }
 
     public enum TokenSimple {

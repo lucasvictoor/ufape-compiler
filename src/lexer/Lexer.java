@@ -153,7 +153,7 @@ public class Lexer {
         if (tokenReserved != null) {
             return new Token(tokenReserved, identificadorString, inicioLinha, inicioColuna);
         } else {
-            // Adiciona à tabela de símbolos
+            // Adiciona à tabela de símbolos apenas se não for palavra reservada
             if (!symbolTable.contains(identificadorString)) {
                 symbolTable.addEntry(identificadorString, "indefinido", "variavel", "global", null);
             }
