@@ -29,12 +29,12 @@ public class Lexer {
             if (Character.isWhitespace(charAtual)) {
                 skipWhitespace();
             } else if (isMatch("[a-zA-Z_]", charAtual)) {
-                System.out.println("Letra charAtual: " + charAtual);
+                //System.out.println("Letra charAtual: " + charAtual);
                 tokens.add(lexemaIdentificador());
-            } else if (Character.isDigit(charAtual)) {
+            } else if (isMatch("\\d", charAtual)) {
                 tokens.add(lexemaNumerico());
             } else {
-                System.out.println("Simbolo charAtual: " + charAtual);
+                //System.out.println("Simbolo charAtual: " + charAtual);
                 tokens.add(lexemaSimbolo());
             }
         }
@@ -131,14 +131,14 @@ public class Lexer {
         // isMatch("function#|procedure#|[a-zA-Z_][a-zA-Z0-9_]*", codigo.charAt(posicao))
         // (Character.isLetterOrDigit(codigo.charAt(posicao)) || codigo.charAt(posicao) == '_')
         while (posicao < codigo.length() && isMatch("[a-zA-Z_][a-zA-Z0-9_#]*", codigo.charAt(posicao))) {
-            System.out.println("Identificador antes: " + identificador);
+            //System.out.println("Identificador antes: " + identificador);
             identificador.append(codigo.charAt(posicao));
-            System.out.println("Identificador pós append: " + identificador);
+            //System.out.println("Identificador pós append: " + identificador);
             posicao++;
             coluna++;
         }
 
-        System.out.println("Identificador: " + identificador.toString());
+        //System.out.println("Identificador: " + identificador.toString());
 
         String identificadorString = identificador.toString();
         TokenType.TokenReserved tokenReserved = getTokenReservado(identificadorString);
