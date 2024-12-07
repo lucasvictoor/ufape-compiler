@@ -11,12 +11,19 @@ public class Lexer {
     private int linha;
     private int coluna;
     private int posicao;
+    private SymbolTable symbolTable;
 
     public Lexer() {
         this.linha = 1;
         this.coluna = 1;
         this.posicao = 0;
+        this.symbolTable = new SymbolTable(); 
     }
+
+    // Método para a tabela de símbolos
+    public SymbolTable getSymbolTable() {
+        return this.symbolTable;
+    }    
 
     // Método que recebe um código fonte e retorna uma lista de tokens
     public List<Token> tokenize(String codigo) {
@@ -146,6 +153,10 @@ public class Lexer {
         if (tokenReserved != null) {
             return new Token(tokenReserved, identificadorString, inicioLinha, inicioColuna);
         } else {
+            // Adiciona à tabela de símbolos apenas se não for palavra reservada
+            if (!symbolTable.contains(identificadorString)) {
+                symbolTable.addEntry(identificadorString, "indefinido", "variavel", "global", null);
+            }
             return new Token(TokenType.TokenSimple.ID, identificadorString, inicioLinha, inicioColuna);
         }
     }

@@ -21,5 +21,8 @@ public class App {
         for (Token token : tokens) {
             System.out.println(token);
         }
+
+        // Exibe a tabela de símbolos
+        System.out.println(lexer.getSymbolTable());
     }
 }
