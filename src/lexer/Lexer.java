@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import symbol.SymbolTable;
+
 public class Lexer {
 
     private String codigo;
@@ -17,13 +19,13 @@ public class Lexer {
         this.linha = 1;
         this.coluna = 1;
         this.posicao = 0;
-        this.symbolTable = new SymbolTable(); 
+        this.symbolTable = new SymbolTable();
     }
 
     // Método para a tabela de símbolos
     public SymbolTable getSymbolTable() {
         return this.symbolTable;
-    }    
+    }
 
     // Método que recebe um código fonte e retorna uma lista de tokens
     public List<Token> tokenize(String codigo) {
@@ -36,12 +38,12 @@ public class Lexer {
             if (Character.isWhitespace(charAtual)) {
                 skipWhitespace();
             } else if (isMatch("[a-zA-Z_]", charAtual)) {
-                //System.out.println("Letra charAtual: " + charAtual);
+                // System.out.println("Letra charAtual: " + charAtual);
                 tokens.add(lexemaIdentificador());
             } else if (isMatch("\\d", charAtual)) {
                 tokens.add(lexemaNumerico());
             } else {
-                //System.out.println("Simbolo charAtual: " + charAtual);
+                // System.out.println("Simbolo charAtual: " + charAtual);
                 tokens.add(lexemaSimbolo());
             }
         }
@@ -134,18 +136,17 @@ public class Lexer {
         int inicioColuna = coluna;
         StringBuilder identificador = new StringBuilder();
 
-        // codigo.substring(posicao).matches("function#|procedure#|[a-zA-Z_][a-zA-Z0-9_]*"))
-        // isMatch("function#|procedure#|[a-zA-Z_][a-zA-Z0-9_]*", codigo.charAt(posicao))
-        // (Character.isLetterOrDigit(codigo.charAt(posicao)) || codigo.charAt(posicao) == '_')
         while (posicao < codigo.length() && isMatch("[a-zA-Z_0-9#]", codigo.charAt(posicao))) {
-            //System.out.println("Identificador antes: " + identificador);
             identificador.append(codigo.charAt(posicao));
-            //System.out.println("Identificador pós append: " + identificador);
             posicao++;
             coluna++;
+
+            if (identificador.toString().contains("#")) {
+                break;
+            }
         }
 
-        //System.out.println("Identificador: " + identificador.toString());
+        // System.out.println("Identificador: " + identificador.toString());
 
         String identificadorString = identificador.toString();
         TokenType.TokenReserved tokenReserved = getTokenReservado(identificadorString);
@@ -154,16 +155,15 @@ public class Lexer {
             return new Token(tokenReserved, identificadorString, inicioLinha, inicioColuna);
         } else {
             // Adiciona à tabela de símbolos apenas se não for palavra reservada
-            if (!symbolTable.contains(identificadorString)) {
-                symbolTable.addEntry(identificadorString, "indefinido", "variavel", "global", null);
-            }
+            symbolTable.addEntry(identificadorString, null, null, null, null, inicioLinha, inicioColuna);
+
             return new Token(TokenType.TokenSimple.ID, identificadorString, inicioLinha, inicioColuna);
         }
     }
 
     private TokenType.TokenReserved getTokenReservado(String id) {
         try {
-            return TokenType.TokenReserved.valueOf(id.toUpperCase().replace("#", "_"));
+            return TokenType.TokenReserved.valueOf(id.toUpperCase().replace("#", ""));
         } catch (IllegalArgumentException e) {
             return null;
         }
