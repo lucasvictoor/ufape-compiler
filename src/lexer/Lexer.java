@@ -95,8 +95,6 @@ public class Lexer {
                     throw new RuntimeException("Caractere inválido: " + charAtual);
                 }
             case ':':
-                posicao++;
-                coluna++;
                 if (posicao < codigo.length() && codigo.charAt(posicao) == '=') {
                     posicao++;
                     coluna++;
