@@ -417,10 +417,10 @@ class ComandoContinue extends Comando {
 
 abstract class Expressao extends ASTNode {}
 
-class ExpressaoLiteral extends Expressao {
+class ExpressaoFatorAtributo extends Expressao {
     private Object valor;
 
-    public ExpressaoLiteral(Object valor) {
+    public ExpressaoFatorAtributo(Object valor) {
         this.valor = valor;
     }
 
@@ -440,10 +440,10 @@ class ExpressaoLiteral extends Expressao {
     }
 }
 
-class ExpressaoVariavel extends Expressao {
+class ExpressaoFatorVariavel extends Expressao {
     private String identificador;
 
-    public ExpressaoVariavel(String identificador) {
+    public ExpressaoFatorVariavel(String identificador) {
         this.identificador = identificador;
     }
 
@@ -463,12 +463,12 @@ class ExpressaoVariavel extends Expressao {
     }
 }
 
-class ExpressaoBinaria extends Expressao {
+class ExpressaoCompleta extends Expressao {
     private Expressao esquerda;
     private Expressao direita;
     private String operador;
 
-    public ExpressaoBinaria(Expressao esquerda, Expressao direita, String operador) {
+    public ExpressaoCompleta(Expressao esquerda, Expressao direita, String operador) {
         this.esquerda = esquerda;
         this.direita = direita;
         this.operador = operador;
@@ -500,7 +500,7 @@ class ExpressaoBinaria extends Expressao {
 
     @Override
     public String toString() {
-        return "ExpressaoBinaria{" +
+        return "ExpressaoCompleta{" +
                 "esquerda=" + esquerda +
                 ", direita=" + direita +
                 ", operador='" + operador + '\'' +
@@ -508,11 +508,11 @@ class ExpressaoBinaria extends Expressao {
     }
 }
 
-class ExpressaoChamadaFunction extends Expressao {
+class ExpressaoFatorChamadaFunction extends Expressao {
     private String nome;
     private List<Argumento> argumentos;
 
-    public ExpressaoChamadaFunction(String nome, List<Argumento> argumentos) {
+    public ExpressaoFatorChamadaFunction(String nome, List<Argumento> argumentos) {
         this.nome = nome;
         this.argumentos = argumentos;
     }

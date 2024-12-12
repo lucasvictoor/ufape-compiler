@@ -57,7 +57,7 @@ public class Parser {
         List<Comando> comando = new ArrayList<>();
 
         while (currToken.getTipo() == TokenType.TokenReserved.VAR) {
-            declaracaoVariavel = parseEtapaDeclaracaoVariavel();
+            declaracaoVariavel.addAll(parseEtapaDeclaracaoVariavel());
         }
 
         while (currToken.getTipo() == TokenType.TokenReserved.DEF) {
@@ -79,7 +79,6 @@ public class Parser {
         advance();
 
         do {
-
             variaveis.add(parseDeclaracaoVariavel());
             if (currToken.getTipo() == TokenType.TokenSymbol.VIRGULA) {
                 advance();
@@ -204,6 +203,7 @@ public class Parser {
 
 
         Expressao expressaoSimples = parseExpressaoSimples();
+        System.out.println("Expressao simples: " + expressaoSimples + " " + currToken.getLinha());
 
 
         List<Enum> operadorRelacional = new ArrayList<>();
@@ -218,18 +218,18 @@ public class Parser {
             String operador = currToken.getValor();
             advance();
             Expressao expressaoSimples2 = parseExpressaoSimples();
-            return new ExpressaoBinaria(expressaoSimples, expressaoSimples2, operador);
+            return new ExpressaoCompleta(expressaoSimples, expressaoSimples2, operador);
         }
 
         advance();
-        return expressaoSimples;
+        return new ExpressaoCompleta(expressaoSimples, null, null);
     }
 
     public Expressao parseExpressaoSimples(){
         // <expressão simples> ::= [ + | - ] <termo> {( + | - ) <termo> }
-        if (currToken.getTipo() == TokenType.TokenOperator.MAIS || currToken.getTipo() == TokenType.TokenOperator.MENOS) {
-            advance();
-        }
+        //if (currToken.getTipo() == TokenType.TokenOperator.MAIS || currToken.getTipo() == TokenType.TokenOperator.MENOS) {
+        //    advance();
+        //}
 
         Expressao termo = parseTermo();
         return termo;
@@ -251,11 +251,11 @@ public class Parser {
         tiposBooleanos.add(TokenType.TokenReserved.FALSE);
 
         if (currToken.getTipo() == TokenType.TokenSimple.ID) {
-            return new ExpressaoVariavel(currToken.getValor());
+            return new ExpressaoFatorVariavel(currToken.getValor());
         }
 
         if (currToken.getTipo() == TokenType.TokenSimple.NUMERO) {
-            return new ExpressaoLiteral(Integer.parseInt(currToken.getValor()));
+            return new ExpressaoFatorAtributo(Integer.parseInt(currToken.getValor()));
         }
 
         if (currToken.getTipo() == TokenType.TokenReserved.FUNCTION) {
@@ -272,17 +272,15 @@ public class Parser {
             }
 
             expect(TokenType.TokenSymbol.FECHA_PARENTESE);
-            return new ExpressaoChamadaFunction(currToken.getValor(), argumentos);
+            return new ExpressaoFatorChamadaFunction(currToken.getValor(), argumentos);
             
         }
 
         if (tiposBooleanos.contains(currToken.getTipo())) {
-            return new ExpressaoLiteral(Boolean.parseBoolean(currToken.getValor()));
+            return new ExpressaoFatorAtributo(Boolean.parseBoolean(currToken.getValor()));
         }
 
         if (currToken.getTipo() == TokenType.TokenSymbol.ABRE_PARENTESE) {
-
-
             advance();
             Expressao expressao = parseExpressao();
             expect(TokenType.TokenSymbol.FECHA_PARENTESE);
@@ -290,7 +288,7 @@ public class Parser {
             return expressao;
         }
 
-
+        System.out.println("NULL " + currToken.getTipo() + " " + currToken.getValor());
         return null;
     }
 
