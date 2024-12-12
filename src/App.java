@@ -10,6 +10,11 @@ public class App {
         String sourceCode = """
                 MODELO begin
                     var integer x_1 := 10;
+                    var integer x_2 := 20;
+
+                    while (x_1 < 20) do
+                        x_1 := x_1 + 1;
+                    end
                 end
                 """;
         List<Token> tokens = lexer.tokenize(sourceCode);

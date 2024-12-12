@@ -267,9 +267,9 @@ class ComandoChamadaProcedure extends Comando {
 
 class ComandoAtribuicao extends Comando {
     private String identificador;
-    private Expressao expressao;
+    private List<Expressao> expressao;
 
-    public ComandoAtribuicao(String identificador, Expressao expressao) {
+    public ComandoAtribuicao(String identificador, List<Expressao> expressao) {
         this.identificador = identificador;
         this.expressao = expressao;
     }
@@ -282,11 +282,11 @@ class ComandoAtribuicao extends Comando {
         this.identificador = identificador;
     }
 
-    public Expressao getExpressao() {
+    public List<Expressao> getExpressao() {
         return expressao;
     }
 
-    public void setExpressao(Expressao expressao) {
+    public void setExpressao(List<Expressao> expressao) {
         this.expressao = expressao;
     }
 
@@ -345,27 +345,27 @@ class ComandoCondicional extends Comando {
 }
 
 class ComandoEnquanto extends Comando {
-    private Expressao expressao;
-    private Comando comando;
+    private List<Expressao> expressao;
+    private List<Comando> comando;
 
-    public ComandoEnquanto(Expressao expressao, Comando comando) {
+    public ComandoEnquanto(List<Expressao> expressao, List<Comando> comando) {
         this.expressao = expressao;
         this.comando = comando;
     }
 
-    public Expressao getExpressao() {
+    public List<Expressao> getExpressao() {
         return expressao;
     }
 
-    public void setExpressao(Expressao expressao) {
+    public void setExpressao(List<Expressao> expressao) {
         this.expressao = expressao;
     }
 
-    public Comando getComando() {
+    public List<Comando> getComando() {
         return comando;
     }
 
-    public void setComando(Comando comando) {
+    public void setComando(List<Comando> comando) {
         this.comando = comando;
     }
 
@@ -510,9 +510,9 @@ class ExpressaoBinaria extends Expressao {
 
 class ExpressaoChamadaFunction extends Expressao {
     private String nome;
-    private List<Expressao> argumentos;
+    private List<Argumento> argumentos;
 
-    public ExpressaoChamadaFunction(String nome, List<Expressao> argumentos) {
+    public ExpressaoChamadaFunction(String nome, List<Argumento> argumentos) {
         this.nome = nome;
         this.argumentos = argumentos;
     }
@@ -525,11 +525,11 @@ class ExpressaoChamadaFunction extends Expressao {
         this.nome = nome;
     }
 
-    public List<Expressao> getArgumentos() {
+    public List<Argumento> getArgumentos() {
         return argumentos;
     }
 
-    public void setArgumentos(List<Expressao> argumentos) {
+    public void setArgumentos(List<Argumento> argumentos) {
         this.argumentos = argumentos;
     }
 
