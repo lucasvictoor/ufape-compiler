@@ -6,6 +6,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import symbol.SymbolTable;
+import symbol.SymbolTableEntry;
 
 public class Lexer {
 
@@ -23,8 +24,8 @@ public class Lexer {
     }
 
     // Método para a tabela de símbolos
-    public SymbolTable getSymbolTable() {
-        return this.symbolTable;
+    public List<SymbolTableEntry> getSymbolTable() {
+        return this.symbolTable.getTable();
     }
 
     // Método que recebe um código fonte e retorna uma lista de tokens
@@ -94,8 +95,6 @@ public class Lexer {
                     throw new RuntimeException("Caractere inválido: " + charAtual);
                 }
             case ':':
-                posicao++;
-                coluna++;
                 if (posicao < codigo.length() && codigo.charAt(posicao) == '=') {
                     posicao++;
                     coluna++;

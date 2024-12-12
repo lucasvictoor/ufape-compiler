@@ -33,12 +33,8 @@ public class SymbolTable {
         return false;
     }
 
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder("\nTabela de Simbolos:\n");
-        for (SymbolTableEntry entry : table) {
-            sb.append(entry).append("\n");
-        }
-        return sb.toString();
+
+    public List<SymbolTableEntry> getTable() {
+        return table;
     }
 }
