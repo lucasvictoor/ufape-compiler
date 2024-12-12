@@ -22,15 +22,16 @@ public class Parser {
 
     private void expect(Enum tipo){
         if (currToken.getTipo() != tipo) {
-            System.out.println("Erro de sintaxe: esperado " + tipo + " mas encontrado " + currToken.getTipo() + " na linha " + currToken.getLinha() + " e coluna " + currToken.getColuna());
-            //throw new SyntaxError("Expected " + tipo + " but found " + currToken.getTipo());
+            //System.out.println("Erro de sintaxe: esperado " + tipo + " mas encontrado " + currToken.getTipo() + " na linha " + currToken.getLinha() + " e coluna " + currToken.getColuna());
+            throw new SyntaxError("Erro de sintaxe: esperado " + tipo + "mas encontrado " + currToken.getTipo() + " na linha " + currToken.getLinha() + " e coluna " + currToken.getColuna());
         }
         //advance();   
     }
 
     private void expectIn(List<Enum> tipos){
         if (!tipos.contains(currToken.getTipo())) {
-            System.out.println("Erro de sintaxe: esperado " + tipos + " mas encontrado " + currToken.getTipo());
+            //System.out.println("Erro de sintaxe: esperado " + tipos + " mas encontrado " + currToken.getTipo());
+            throw new SyntaxError("Erro de sintaxe: esperado " + tipos + " mas encontrado " + currToken.getTipo() + " na linha " + currToken.getLinha() + " e coluna " + currToken.getColuna());
         }
     }
 
@@ -203,7 +204,6 @@ public class Parser {
 
 
         Expressao expressaoSimples = parseExpressaoSimples();
-        System.out.println("Expressao simples: " + expressaoSimples + " " + currToken.getLinha());
 
 
         List<Enum> operadorRelacional = new ArrayList<>();
@@ -288,7 +288,6 @@ public class Parser {
             return expressao;
         }
 
-        System.out.println("NULL " + currToken.getTipo() + " " + currToken.getValor());
         return null;
     }
 
