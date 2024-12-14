@@ -3,6 +3,7 @@ package parser;
 import java.util.ArrayList;
 import java.util.List;
 
+import ast.*;
 import lexer.Token;
 import lexer.TokenType;
 import lexer.TokenType.TokenOperator;
@@ -218,11 +219,11 @@ public class Parser {
             String operador = currToken.getValor();
             advance();
             Expressao expressaoSimples2 = parseExpressaoSimples();
-            return new ExpressaoCompleta(expressaoSimples, expressaoSimples2, operador);
+            return new ExpressaoCompleta("completa",expressaoSimples, expressaoSimples2, operador);
         }
 
         advance();
-        return new ExpressaoCompleta(expressaoSimples, null, null);
+        return new ExpressaoCompleta("completa",expressaoSimples, null, null);
     }
 
     public Expressao parseExpressaoSimples(){
@@ -251,11 +252,11 @@ public class Parser {
         tiposBooleanos.add(TokenType.TokenReserved.FALSE);
 
         if (currToken.getTipo() == TokenType.TokenSimple.ID) {
-            return new ExpressaoFatorVariavel(currToken.getValor());
+            return new ExpressaoFatorVariavel("variavel",currToken.getValor());
         }
 
         if (currToken.getTipo() == TokenType.TokenSimple.NUMERO) {
-            return new ExpressaoFatorAtributo(Integer.parseInt(currToken.getValor()));
+            return new ExpressaoFatorAtributo("numero",Integer.parseInt(currToken.getValor()));
         }
 
         if (currToken.getTipo() == TokenType.TokenReserved.FUNCTION) {
@@ -272,12 +273,12 @@ public class Parser {
             }
 
             expect(TokenType.TokenSymbol.FECHA_PARENTESE);
-            return new ExpressaoFatorChamadaFunction(currToken.getValor(), argumentos);
+            return new ExpressaoFatorChamadaFunction("chamada_funcao",currToken.getValor(), argumentos);
             
         }
 
         if (tiposBooleanos.contains(currToken.getTipo())) {
-            return new ExpressaoFatorAtributo(Boolean.parseBoolean(currToken.getValor()));
+            return new ExpressaoFatorAtributo("boolean",Boolean.parseBoolean(currToken.getValor()));
         }
 
         if (currToken.getTipo() == TokenType.TokenSymbol.ABRE_PARENTESE) {
