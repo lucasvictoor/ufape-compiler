@@ -1,7 +1,7 @@
 package ast;
 import java.util.List;
 
-class DeclaracaoFunction extends DeclaracaoSubRotina {
+public class DeclaracaoFunction extends DeclaracaoSubRotina {
     private String tipoRetorno;
     private Expressao expressao;
 
