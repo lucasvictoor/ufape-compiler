@@ -3,8 +3,7 @@ package ast;
 public class Expressao extends ASTNode {
     private String valor;
 
-    public Expressao(String valor) {
-        this.valor = valor;
+    public Expressao() {
     }
 
     public String getValor() {

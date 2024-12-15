@@ -4,20 +4,17 @@ public class ExpressaoFatorAtributo extends Expressao {
     private Object atributo;
 
     // Construtor genérico para qualquer tipo de atributo
-    public ExpressaoFatorAtributo(String valor, Object atributo) {
-        super(valor);
+    public ExpressaoFatorAtributo(Object atributo) {
         this.atributo = atributo;
     }
 
     // Construtor para int
-    public ExpressaoFatorAtributo(String valor, int atributo) {
-        super(valor); 
+    public ExpressaoFatorAtributo(int atributo) { 
         this.atributo = atributo;
     }
 
     // Construtor para boolean
-    public ExpressaoFatorAtributo(String valor, boolean atributo) {
-        super(valor);
+    public ExpressaoFatorAtributo(boolean atributo) {
         this.atributo = atributo;
     }
 

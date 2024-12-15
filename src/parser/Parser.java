@@ -11,6 +11,7 @@ import lexer.TokenType.TokenOperator;
 public class Parser {
     private List<Token> tokens;
     private Token currToken;
+    private Token proxToken;
 
     public Parser(List<Token> tokens) {
         this.tokens = tokens;
@@ -24,7 +25,7 @@ public class Parser {
     private void expect(Enum tipo){
         if (currToken.getTipo() != tipo) {
             //System.out.println("Erro de sintaxe: esperado " + tipo + " mas encontrado " + currToken.getTipo() + " na linha " + currToken.getLinha() + " e coluna " + currToken.getColuna());
-            throw new SyntaxError("Erro de sintaxe: esperado " + tipo + "mas encontrado " + currToken.getTipo() + " na linha " + currToken.getLinha() + " e coluna " + currToken.getColuna());
+            throw new SyntaxError("Erro de sintaxe: esperado " + tipo + " mas encontrado " + currToken.getTipo() + " na linha " + currToken.getLinha() + " e coluna " + currToken.getColuna());
         }
         //advance();   
     }
@@ -85,8 +86,7 @@ public class Parser {
             if (currToken.getTipo() == TokenType.TokenSymbol.VIRGULA) {
                 advance();
             }
-        } while (TokenType.TokenSymbol.PONTO_E_VIRGULA != currToken.getTipo());
-
+        } while (TokenType.TokenSymbol.PONTO_E_VIRGULA != currToken.getTipo() && TokenType.TokenReserved.VAR != currToken.getTipo());
 
         expect(TokenType.TokenSymbol.PONTO_E_VIRGULA);
 
@@ -113,8 +113,8 @@ public class Parser {
         if (currToken.getTipo() == TokenType.TokenOperator.ATRIBUICAO) {
             advance();
             inicializacao = parseExpressao();
+            advance();
         }
-
 
         return new DeclaracaoVariavel(tipo, nomeVariavel, inicializacao);
     }
@@ -203,9 +203,7 @@ public class Parser {
     public Expressao parseExpressao(){
         //<expressão>::= <expressão simples> [<operador relacional><expressão simples>];
 
-
         Expressao expressaoSimples = parseExpressaoSimples();
-
 
         List<Enum> operadorRelacional = new ArrayList<>();
         operadorRelacional.add(TokenType.TokenOperator.MAIOR);
@@ -215,24 +213,52 @@ public class Parser {
         operadorRelacional.add(TokenType.TokenOperator.IGUAL);
         operadorRelacional.add(TokenType.TokenOperator.DIFERENTE);
 
+        Token proxToken = tokens.get(tokens.indexOf(currToken) + 1);
+
+        if (operadorRelacional.contains(proxToken.getTipo())) {
+            advance();           
+        }
+
         if (operadorRelacional.contains(currToken.getTipo())) {
             String operador = currToken.getValor();
             advance();
             Expressao expressaoSimples2 = parseExpressaoSimples();
-            return new ExpressaoCompleta("completa",expressaoSimples, expressaoSimples2, operador);
+            return new ExpressaoCompleta(expressaoSimples, expressaoSimples2, operador);
         }
 
-        advance();
-        return new ExpressaoCompleta("completa",expressaoSimples, null, null);
+        //advance();
+        return expressaoSimples;
     }
 
     public Expressao parseExpressaoSimples(){
         // <expressão simples> ::= [ + | - ] <termo> {( + | - ) <termo> }
-        //if (currToken.getTipo() == TokenType.TokenOperator.MAIS || currToken.getTipo() == TokenType.TokenOperator.MENOS) {
-        //    advance();
-        //}
 
+        List<Enum> operadorDiferença = new ArrayList<>();
+        operadorDiferença.add(TokenType.TokenOperator.MAIS);
+        operadorDiferença.add(TokenType.TokenOperator.MENOR);
+
+        boolean temSinal = operadorDiferença.contains(currToken.getTipo());
+        Token sinal = temSinal ? currToken : null;
+
+        Token proxToken = tokens.get(tokens.indexOf(currToken) + 1);
+
+        if (temSinal) {
+            advance();
+        }
+        
         Expressao termo = parseTermo();
+
+        if (sinal != null) {
+            termo = new ExpressaoCompleta(termo, termo, sinal.getValor());
+            advance();
+        }
+
+        if (operadorDiferença.contains(proxToken.getTipo())) {
+            advance();
+            parseExpressaoSimples();
+        }
+
+        //Expressao termo = parseTermo();
         return termo;
     }
 
@@ -245,18 +271,17 @@ public class Parser {
     }
 
     public Expressao parseFator(){
-
         // <fator> ::= (<variável> | <número> | <chamada de função> | (<expressão>) | true | false)
         List<Enum> tiposBooleanos = new ArrayList<>();
         tiposBooleanos.add(TokenType.TokenReserved.TRUE);
         tiposBooleanos.add(TokenType.TokenReserved.FALSE);
 
         if (currToken.getTipo() == TokenType.TokenSimple.ID) {
-            return new ExpressaoFatorVariavel("variavel",currToken.getValor());
+            return new ExpressaoFatorVariavel(currToken.getValor());
         }
 
         if (currToken.getTipo() == TokenType.TokenSimple.NUMERO) {
-            return new ExpressaoFatorAtributo("numero",Integer.parseInt(currToken.getValor()));
+            return new ExpressaoFatorAtributo(Integer.parseInt(currToken.getValor()));
         }
 
         if (currToken.getTipo() == TokenType.TokenReserved.FUNCTION) {
@@ -273,23 +298,23 @@ public class Parser {
             }
 
             expect(TokenType.TokenSymbol.FECHA_PARENTESE);
-            return new ExpressaoFatorChamadaFunction("chamada_funcao",currToken.getValor(), argumentos);
+            return new ExpressaoFatorChamadaFunction(currToken.getValor(), argumentos);
             
         }
 
         if (tiposBooleanos.contains(currToken.getTipo())) {
-            return new ExpressaoFatorAtributo("boolean",Boolean.parseBoolean(currToken.getValor()));
+            return new ExpressaoFatorAtributo(Boolean.parseBoolean(currToken.getValor()));
         }
 
         if (currToken.getTipo() == TokenType.TokenSymbol.ABRE_PARENTESE) {
             advance();
             Expressao expressao = parseExpressao();
-            expect(TokenType.TokenSymbol.FECHA_PARENTESE);
             advance();
+            expect(TokenType.TokenSymbol.FECHA_PARENTESE);
             return expressao;
         }
 
-        return null;
+        throw new RuntimeException("Expect expression.");
     }
 
     public ComandoAtribuicao parseComandoAtribuicao(){

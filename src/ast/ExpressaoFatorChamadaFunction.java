@@ -5,8 +5,7 @@ public class ExpressaoFatorChamadaFunction extends Expressao {
     private String nome;
     private List<Argumento> argumentos;
 
-    public ExpressaoFatorChamadaFunction(String valor, String nome, List<Argumento> argumentos) {
-        super(valor);
+    public ExpressaoFatorChamadaFunction(String nome, List<Argumento> argumentos) {
         this.nome = nome;
         this.argumentos = argumentos;
     }

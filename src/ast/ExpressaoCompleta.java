@@ -5,8 +5,7 @@ public class ExpressaoCompleta extends Expressao {
     private Expressao direita;
     private String operador;
 
-    public ExpressaoCompleta(String valor, Expressao esquerda, Expressao direita, String operador) {
-        super(valor);
+    public ExpressaoCompleta(Expressao esquerda, Expressao direita, String operador) {
         this.esquerda = esquerda;
         this.direita = direita;
         this.operador = operador;
