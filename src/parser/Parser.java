@@ -255,7 +255,7 @@ public class Parser {
 
         if (operadorDiferença.contains(proxToken.getTipo())) {
             advance();
-            parseExpressaoSimples();
+            termo = new ExpressaoCompleta(termo, parseExpressaoSimples(), currToken.getValor());
         }
 
         //Expressao termo = parseTermo();
