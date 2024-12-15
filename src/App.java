@@ -2,6 +2,7 @@ import java.util.List;
 
 import lexer.*;
 import parser.*;
+import symbol.SymbolTable;
 import ast.ASTNode;
 
 public class App {
@@ -24,15 +25,15 @@ public class App {
             System.out.println(token);
         }
 
-        System.out.println('\n');
-
         // Exibe a tabela de símbolos
-        //System.out.println("\n\n" + lexer.getSymbolTable());
+        System.out.println("\n");
+        SymbolTable symbolTable = lexer.getSymbolTable();
+        symbolTable.printTable();
 
-        Parser parser = new Parser(tokens);
-        ASTNode programa = parser.parsePrograma();
+        //Parser parser = new Parser(tokens);
+        //ASTNode programa = parser.parsePrograma();
 
-        System.out.println(programa.toString());
+        //System.out.println(programa.toString());
 
     }
 }

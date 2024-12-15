@@ -24,8 +24,8 @@ public class Lexer {
     }
 
     // Método para a tabela de símbolos
-    public List<SymbolTableEntry> getSymbolTable() {
-        return this.symbolTable.getTable();
+    public SymbolTable getSymbolTable() {
+        return this.symbolTable;
     }
 
     // Método que recebe um código fonte e retorna uma lista de tokens
