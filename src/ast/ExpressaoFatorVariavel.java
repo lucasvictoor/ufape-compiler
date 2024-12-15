@@ -3,8 +3,7 @@ package ast;
 public class ExpressaoFatorVariavel extends Expressao {
     private String identificador;
 
-    public ExpressaoFatorVariavel(String valor, String identificador) {
-        super(valor);
+    public ExpressaoFatorVariavel(String identificador) {
         this.identificador = identificador;
     }
 
