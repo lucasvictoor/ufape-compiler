@@ -26,17 +26,13 @@ public class SymbolTableEntry {
 
     @Override
     public String toString() {
-        return "SymbolTableEntry{" +
-                "id=" + id +
-                ", nome='" + identificador + '\'' +
-                ", tipo='" + tipo + '\'' +
-                ", categoria='" + category + '\'' +
-                ", escopo='" + scope + '\'' +
-                ", parametros=" + parametros +
-                ", linha=" + linha +
-                ", coluna=" + coluna +
-                '}';
+        return String.format(
+            "| %-5d | %-20s | %-10s | %-10s | %-10s | %-15s | %-5d | %-5d |",
+            id, identificador, tipo, category, scope, 
+            parametros != null ? parametros.toString() : "null", linha, coluna
+        );
     }
+    
 
     // Getters e Setters
     public String getIdentificador() { return identificador; }

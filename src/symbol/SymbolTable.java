@@ -37,4 +37,18 @@ public class SymbolTable {
     public List<SymbolTableEntry> getTable() {
         return table;
     }
+
+    public void printTable() {
+        System.out.println("Tabela de Simbolos:");
+        System.out.println("-------------------------------------------------------------------------------");
+        System.out.printf("| %-5s | %-20s | %-10s | %-10s | %-10s | %-15s | %-5s | %-5s |\n", 
+            "ID", "Nome", "Tipo", "Categoria", "Escopo", "Parametros", "Linha", "Coluna");
+        System.out.println("-------------------------------------------------------------------------------");
+    
+        for (SymbolTableEntry entry : table) {
+            System.out.println(entry.toString());
+        }
+        System.out.println("-------------------------------------------------------------------------------");
+    }
+    
 }
