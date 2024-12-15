@@ -134,31 +134,49 @@ public class Lexer {
         int inicioLinha = linha;
         int inicioColuna = coluna;
         StringBuilder identificador = new StringBuilder();
-
+    
         while (posicao < codigo.length() && isMatch("[a-zA-Z_0-9#]", codigo.charAt(posicao))) {
             identificador.append(codigo.charAt(posicao));
             posicao++;
             coluna++;
-
-            if (identificador.toString().contains("#")) {
-                break;
-            }
         }
-
-        // System.out.println("Identificador: " + identificador.toString());
-
+    
         String identificadorString = identificador.toString();
         TokenType.TokenReserved tokenReserved = getTokenReservado(identificadorString);
-
+    
         if (tokenReserved != null) {
             return new Token(tokenReserved, identificadorString, inicioLinha, inicioColuna);
         } else {
-            // Adiciona à tabela de símbolos apenas se não for palavra reservada
-            symbolTable.addEntry(identificadorString, null, null, null, null, inicioLinha, inicioColuna);
-
+            // Adiciona o identificador à tabela de símbolos
+            // Verifica se há um tipo previamente identificado antes do identificador
+            String tipo = getPreviousType();
+    
+            symbolTable.addEntry(identificadorString, tipo, "variavel", "global", null, inicioLinha, inicioColuna);
+    
             return new Token(TokenType.TokenSimple.ID, identificadorString, inicioLinha, inicioColuna);
         }
     }
+    
+    // Método auxiliar para pegar o tipo da variável no contexto anterior
+    private String getPreviousType() {
+        int prevPos = posicao - 1;
+        while (prevPos >= 0 && Character.isWhitespace(codigo.charAt(prevPos))) {
+            prevPos--;
+        }
+    
+        StringBuilder tipo = new StringBuilder();
+        while (prevPos >= 0 && isMatch("[a-zA-Z]", codigo.charAt(prevPos))) {
+            tipo.insert(0, codigo.charAt(prevPos));
+            prevPos--;
+        }
+    
+        String tipoString = tipo.toString();
+        if (tipoString.equals("integer") || tipoString.equals("boolean")) {
+            return tipoString;
+        }
+        return null;
+    }
+    
 
     private TokenType.TokenReserved getTokenReservado(String id) {
         try {
