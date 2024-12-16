@@ -139,6 +139,10 @@ public class Lexer {
             identificador.append(codigo.charAt(posicao));
             posicao++;
             coluna++;
+
+            if (identificador.toString().contains("#")) {
+                break;
+            }
         }
     
         String identificadorString = identificador.toString();

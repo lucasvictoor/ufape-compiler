@@ -209,18 +209,33 @@ public class Parser {
         }
 
         if (currToken.getTipo() == TokenType.TokenReserved.PRINT) {
-            return new ComandoLeitura(null);
-        }
+            advance();
+            expect(TokenType.TokenSymbol.ABRE_PARENTESE);
+            advance();
+            Expressao expressao = parseExpressao();
+            advance();
+            expect(TokenType.TokenSymbol.FECHA_PARENTESE);
+            advance();
 
-        if (currToken.getTipo() == TokenType.TokenReserved.CONTINUE) {
-            return new ComandoContinue();
-        }
-
-        if (currToken.getTipo() == TokenType.TokenReserved.BREAK) {
-            return new ComandoBreak();
+            return new ComandoLeitura(expressao);
         }
 
         if (currToken.getTipo() == TokenType.TokenReserved.PROCEDURE) {
+            advance();
+            expect(TokenType.TokenSimple.ID);
+            advance();
+            expect(TokenType.TokenSymbol.ABRE_PARENTESE);
+            advance();
+            List<Expressao> expressao = new ArrayList<>();
+            while (currToken.getTipo() != TokenType.TokenSymbol.FECHA_PARENTESE) {
+                expressao.add(parseExpressao());
+                advance();
+                if (currToken.getTipo() == TokenType.TokenSymbol.VIRGULA) {
+                    advance();
+                }
+            }
+            expect(TokenType.TokenSymbol.FECHA_PARENTESE);
+            advance();
             return new ComandoChamadaProcedure(null, null);
         }
 
@@ -261,6 +276,17 @@ public class Parser {
             comando.add(parseComandos());
             if (currToken.getTipo() == TokenType.TokenSymbol.PONTO_E_VIRGULA) {
                 advance();
+            }
+            if (currToken.getTipo() == TokenType.TokenReserved.CONTINUE) {
+                advance();
+                Comando comandoContinue = new ComandoContinue();
+                comando.add(comandoContinue);
+            }
+    
+            if (currToken.getTipo() == TokenType.TokenReserved.BREAK) {
+                advance();
+                Comando comandoBreak = new ComandoBreak();
+                comando.add(comandoBreak);
             }
         }
 

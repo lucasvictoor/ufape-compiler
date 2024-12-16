@@ -24,11 +24,15 @@ public class App {
                     def menos (x_1, x_2): void do
                         var integer x;
                         x := x_1 - x_2;
+                        print(x);
                     end
 
                     while ((x_1 + x_2) < 20) do
                         x_1 := x_1 + 1;
+                        break;
                     end
+
+                    procedure#menos(x_1, x_2);
                 end
                 """;
         List<Token> tokens = lexer.tokenize(sourceCode);
