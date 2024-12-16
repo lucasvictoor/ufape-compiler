@@ -29,8 +29,7 @@ public class ExpressaoFatorAtributo extends Expressao {
     @Override
     public String toString() {
         return "ExpressaoFatorAtributo{" +
-                "valor='" + getValor() + '\'' +
-                ", atributo=" + atributo +
+                "atributo=" + atributo +
                 '}';
     }
 }

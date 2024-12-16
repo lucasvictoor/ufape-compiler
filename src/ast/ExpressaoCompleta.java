@@ -38,7 +38,6 @@ public class ExpressaoCompleta extends Expressao {
     @Override
     public String toString() {
         return "ExpressaoCompleta{" +
-                "valor='" + getValor() + '\'' +
                 "esquerda=" + esquerda +
                 ", direita=" + direita +
                 ", operador='" + operador + '\'' +

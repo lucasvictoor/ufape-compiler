@@ -29,7 +29,6 @@ public class ExpressaoFatorChamadaFunction extends Expressao {
     @Override
     public String toString() {
         return "ExpressaoChamadaFunction{" +
-                "valor='" + getValor() + '\'' +
                 "nome='" + nome + '\'' +
                 ", argumentos=" + argumentos +
                 '}';

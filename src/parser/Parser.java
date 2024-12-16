@@ -58,17 +58,27 @@ public class Parser {
         List<DeclaracaoVariavel> declaracaoVariavel = new ArrayList<>();
         List<DeclaracaoSubRotina> declaracaoSubRotina = new ArrayList<>();
         List<Comando> comando = new ArrayList<>();
+        Token proxToken = tokens.get(tokens.indexOf(currToken) + 1);
 
         while (currToken.getTipo() == TokenType.TokenReserved.VAR) {
             declaracaoVariavel.addAll(parseEtapaDeclaracaoVariavel());
         }
 
         while (currToken.getTipo() == TokenType.TokenReserved.DEF) {
-            declaracaoSubRotina.add(parseDeclaracaoSubRotina());            
+            declaracaoSubRotina.add(parseDeclaracaoSubRotina());
+            if (tokens.get(tokens.indexOf(currToken) + 1).getTipo() == TokenType.TokenReserved.DEF) {
+                advance();                
+            }
         }
 
         while (currToken.getTipo() != TokenType.TokenReserved.END) {
-            comando.add(parseComandos());            
+            if (currToken.getTipo() == TokenType.TokenReserved.RETURN) {
+                break;
+            }
+            comando.add(parseComandos());
+            if (currToken.getTipo() == TokenType.TokenSymbol.PONTO_E_VIRGULA) {
+                advance();
+            }
         }
 
         return new Bloco(declaracaoVariavel, declaracaoSubRotina, comando);
@@ -83,9 +93,10 @@ public class Parser {
 
         do {
             variaveis.add(parseDeclaracaoVariavel());
-            if (currToken.getTipo() == TokenType.TokenSymbol.VIRGULA) {
-                advance();
-            }
+            //if (currToken.getTipo() == TokenType.TokenSymbol.VIRGULA) {
+            //    System.out.println("VIRGULA");
+            //    advance();
+            //}
         } while (TokenType.TokenSymbol.PONTO_E_VIRGULA != currToken.getTipo() && TokenType.TokenReserved.VAR != currToken.getTipo());
 
         expect(TokenType.TokenSymbol.PONTO_E_VIRGULA);
@@ -100,11 +111,14 @@ public class Parser {
         List<Enum> tipos = new ArrayList<>();
         tipos.add(TokenType.TokenReserved.INTEGER);
         tipos.add(TokenType.TokenReserved.BOOLEAN);
-        expectIn(tipos);
+        String tipo = "";
 
-        String tipo = currToken.getValor();
+        if (currToken.getTipo() != TokenType.TokenSymbol.VIRGULA) {
+            expectIn(tipos);
+            tipo = currToken.getValor();
+        }
+
         advance();
-
         expect(TokenType.TokenSimple.ID);
         String nomeVariavel = currToken.getValor();
         advance();
@@ -121,7 +135,64 @@ public class Parser {
 
     private DeclaracaoSubRotina parseDeclaracaoSubRotina(){
         //<etapa de declaração de sub-rotinas> ::= ::= (<declaração de procedimento>; | <declaração de função>;)
-        return new DeclaracaoSubRotina(null, null, null);
+        expect(TokenType.TokenReserved.DEF);
+        advance();
+
+        expect(TokenType.TokenSimple.ID);
+        String nome = currToken.getValor();
+        advance();
+
+        List<String> parametros = new ArrayList<>();
+        Bloco bloco = null;
+
+        String tipoRetorno = "";
+        Expressao retorno = null;
+
+        while (TokenType.TokenSymbol.DOIS_PONTOS != currToken.getTipo()) {
+            if (TokenType.TokenSymbol.ABRE_PARENTESE == currToken.getTipo()) {
+                advance();
+                while (TokenType.TokenSymbol.FECHA_PARENTESE != currToken.getTipo()) {
+                    expect(TokenType.TokenSimple.ID);
+                    parametros.add(currToken.getValor());
+                    advance();
+                    if (TokenType.TokenSymbol.VIRGULA == currToken.getTipo()) {
+                        advance();
+                    }
+                }
+                expect(TokenType.TokenSymbol.FECHA_PARENTESE);
+                advance();
+            }
+        }
+        expect(TokenType.TokenSymbol.DOIS_PONTOS);
+        advance();
+
+        if (currToken.getTipo() == TokenType.TokenReserved.INTEGER || currToken.getTipo() == TokenType.TokenReserved.BOOLEAN) {
+            tipoRetorno = currToken.getValor();
+            advance();
+            expect(TokenType.TokenReserved.DO);
+            advance();
+            bloco = parseBloco();
+            expect(TokenType.TokenReserved.RETURN);
+            advance();
+            retorno = parseExpressao();
+            advance();
+            expect(TokenType.TokenSymbol.PONTO_E_VIRGULA);
+            advance();
+            expect(TokenType.TokenReserved.END);
+            return new DeclaracaoFunction(nome, bloco, parametros, tipoRetorno, retorno);       
+        }
+
+        if (currToken.getTipo() == TokenType.TokenReserved.VOID) {
+            advance();
+            expect(TokenType.TokenReserved.DO);
+            advance();
+            bloco = parseBloco();
+            expect(TokenType.TokenReserved.END);
+            advance();
+            return new DeclaracaoProcedure(nome, bloco, parametros);
+        }
+
+        return new DeclaracaoSubRotina(nome, null, parametros);
     }
 
     private Comando parseComandos(){
@@ -138,18 +209,33 @@ public class Parser {
         }
 
         if (currToken.getTipo() == TokenType.TokenReserved.PRINT) {
-            return new ComandoLeitura(null);
-        }
+            advance();
+            expect(TokenType.TokenSymbol.ABRE_PARENTESE);
+            advance();
+            Expressao expressao = parseExpressao();
+            advance();
+            expect(TokenType.TokenSymbol.FECHA_PARENTESE);
+            advance();
 
-        if (currToken.getTipo() == TokenType.TokenReserved.CONTINUE) {
-            return new ComandoContinue();
-        }
-
-        if (currToken.getTipo() == TokenType.TokenReserved.BREAK) {
-            return new ComandoBreak();
+            return new ComandoLeitura(expressao);
         }
 
         if (currToken.getTipo() == TokenType.TokenReserved.PROCEDURE) {
+            advance();
+            expect(TokenType.TokenSimple.ID);
+            advance();
+            expect(TokenType.TokenSymbol.ABRE_PARENTESE);
+            advance();
+            List<Expressao> expressao = new ArrayList<>();
+            while (currToken.getTipo() != TokenType.TokenSymbol.FECHA_PARENTESE) {
+                expressao.add(parseExpressao());
+                advance();
+                if (currToken.getTipo() == TokenType.TokenSymbol.VIRGULA) {
+                    advance();
+                }
+            }
+            expect(TokenType.TokenSymbol.FECHA_PARENTESE);
+            advance();
             return new ComandoChamadaProcedure(null, null);
         }
 
@@ -158,7 +244,7 @@ public class Parser {
             //return new ComandoAtribuicao(null, null);
         }
         
-        return new ComandoAtribuicao(null, null);
+        return null;
     }
 
     public ComandoEnquanto parseComandoEnquanto(){
@@ -190,6 +276,17 @@ public class Parser {
             comando.add(parseComandos());
             if (currToken.getTipo() == TokenType.TokenSymbol.PONTO_E_VIRGULA) {
                 advance();
+            }
+            if (currToken.getTipo() == TokenType.TokenReserved.CONTINUE) {
+                advance();
+                Comando comandoContinue = new ComandoContinue();
+                comando.add(comandoContinue);
+            }
+    
+            if (currToken.getTipo() == TokenType.TokenReserved.BREAK) {
+                advance();
+                Comando comandoBreak = new ComandoBreak();
+                comando.add(comandoBreak);
             }
         }
 
@@ -235,7 +332,7 @@ public class Parser {
 
         List<Enum> operadorDiferença = new ArrayList<>();
         operadorDiferença.add(TokenType.TokenOperator.MAIS);
-        operadorDiferença.add(TokenType.TokenOperator.MENOR);
+        operadorDiferença.add(TokenType.TokenOperator.MENOS);
 
         boolean temSinal = operadorDiferença.contains(currToken.getTipo());
         Token sinal = temSinal ? currToken : null;
@@ -255,7 +352,7 @@ public class Parser {
 
         if (operadorDiferença.contains(proxToken.getTipo())) {
             advance();
-            parseExpressaoSimples();
+            termo = new ExpressaoCompleta(termo, parseExpressaoSimples(), currToken.getValor());
         }
 
         //Expressao termo = parseTermo();

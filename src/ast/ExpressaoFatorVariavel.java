@@ -18,7 +18,6 @@ public class ExpressaoFatorVariavel extends Expressao {
     @Override
     public String toString() {
         return "ExpressaoVariavel{" +
-                "valor='" + getValor() + '\'' +
                 "identificador='" + identificador + '\'' +
                 '}';
     }
