@@ -16,8 +16,14 @@ public class App {
                     var integer x_3, x_4;
 
                     def soma (x_1, x_2): integer do
-                        var integer x := 10;
-                        return x_1 + x_2;
+                        var integer x;
+                        x := x_1 + x_2;
+                        return x;
+                    end
+
+                    def menos (x_1, x_2): void do
+                        var integer x;
+                        x := x_1 - x_2;
                     end
 
                     while ((x_1 + x_2) < 20) do

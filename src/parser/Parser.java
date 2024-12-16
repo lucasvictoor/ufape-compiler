@@ -58,20 +58,27 @@ public class Parser {
         List<DeclaracaoVariavel> declaracaoVariavel = new ArrayList<>();
         List<DeclaracaoSubRotina> declaracaoSubRotina = new ArrayList<>();
         List<Comando> comando = new ArrayList<>();
+        Token proxToken = tokens.get(tokens.indexOf(currToken) + 1);
 
         while (currToken.getTipo() == TokenType.TokenReserved.VAR) {
             declaracaoVariavel.addAll(parseEtapaDeclaracaoVariavel());
         }
 
         while (currToken.getTipo() == TokenType.TokenReserved.DEF) {
-            declaracaoSubRotina.add(parseDeclaracaoSubRotina());            
+            declaracaoSubRotina.add(parseDeclaracaoSubRotina());
+            if (tokens.get(tokens.indexOf(currToken) + 1).getTipo() == TokenType.TokenReserved.DEF) {
+                advance();                
+            }
         }
 
         while (currToken.getTipo() != TokenType.TokenReserved.END) {
             if (currToken.getTipo() == TokenType.TokenReserved.RETURN) {
                 break;
             }
-            comando.add(parseComandos());            
+            comando.add(parseComandos());
+            if (currToken.getTipo() == TokenType.TokenSymbol.PONTO_E_VIRGULA) {
+                advance();
+            }
         }
 
         return new Bloco(declaracaoVariavel, declaracaoSubRotina, comando);
@@ -169,8 +176,20 @@ public class Parser {
             advance();
             retorno = parseExpressao();
             advance();
+            expect(TokenType.TokenSymbol.PONTO_E_VIRGULA);
+            advance();
             expect(TokenType.TokenReserved.END);
             return new DeclaracaoFunction(nome, bloco, parametros, tipoRetorno, retorno);       
+        }
+
+        if (currToken.getTipo() == TokenType.TokenReserved.VOID) {
+            advance();
+            expect(TokenType.TokenReserved.DO);
+            advance();
+            bloco = parseBloco();
+            expect(TokenType.TokenReserved.END);
+            advance();
+            return new DeclaracaoProcedure(nome, bloco, parametros);
         }
 
         return new DeclaracaoSubRotina(nome, null, parametros);
@@ -287,7 +306,7 @@ public class Parser {
 
         List<Enum> operadorDiferença = new ArrayList<>();
         operadorDiferença.add(TokenType.TokenOperator.MAIS);
-        operadorDiferença.add(TokenType.TokenOperator.MENOR);
+        operadorDiferença.add(TokenType.TokenOperator.MENOS);
 
         boolean temSinal = operadorDiferença.contains(currToken.getTipo());
         Token sinal = temSinal ? currToken : null;

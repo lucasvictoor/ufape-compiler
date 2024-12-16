@@ -1,7 +1,7 @@
 package ast;
 import java.util.List;
 
-class DeclaracaoProcedure extends DeclaracaoSubRotina {
+public class DeclaracaoProcedure extends DeclaracaoSubRotina {
     public DeclaracaoProcedure(String nome, Bloco bloco, List<String> parametros) {
         super(nome, bloco, parametros);
     }
