@@ -330,11 +330,11 @@ public class Parser {
     public Expressao parseExpressaoSimples(){
         // <expressão simples> ::= [ + | - ] <termo> {( + | - ) <termo> }
 
-        List<Enum> operadorDiferença = new ArrayList<>();
-        operadorDiferença.add(TokenType.TokenOperator.MAIS);
-        operadorDiferença.add(TokenType.TokenOperator.MENOS);
+        List<Enum> operadorDiferenca = new ArrayList<>();
+        operadorDiferenca.add(TokenType.TokenOperator.MAIS);
+        operadorDiferenca.add(TokenType.TokenOperator.MENOS);
 
-        boolean temSinal = operadorDiferença.contains(currToken.getTipo());
+        boolean temSinal = operadorDiferenca.contains(currToken.getTipo());
         Token sinal = temSinal ? currToken : null;
 
         Token proxToken = tokens.get(tokens.indexOf(currToken) + 1);
@@ -350,7 +350,7 @@ public class Parser {
             advance();
         }
 
-        if (operadorDiferença.contains(proxToken.getTipo())) {
+        if (operadorDiferenca.contains(proxToken.getTipo())) {
             advance();
             termo = new ExpressaoCompleta(termo, parseExpressaoSimples(), currToken.getValor());
         }
