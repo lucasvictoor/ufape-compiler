@@ -49,6 +49,8 @@ public class Parser {
         Bloco bloco = parseBloco();
         expect(TokenType.TokenReserved.END);
 
+        System.out.println("Análise sintática concluída com sucesso. Nenhum erro encontrado.");
+
         return new Programa(nome, bloco);
     }
 
@@ -355,14 +357,23 @@ public class Parser {
             termo = new ExpressaoCompleta(termo, parseExpressaoSimples(), currToken.getValor());
         }
 
-        //Expressao termo = parseTermo();
         return termo;
     }
 
     public Expressao parseTermo(){
         // <termo> ::= <fator> { ( * | / ) <fator> }
         Expressao fator = parseFator();
+        
+        List<TokenType.TokenOperator> operadoresEscala = new ArrayList<>();
+        operadoresEscala.add(TokenType.TokenOperator.VEZES);
+        operadoresEscala.add(TokenType.TokenOperator.DIVIDIDO);
 
+        while (operadoresEscala.contains(tokens.get(tokens.indexOf(currToken) + 1).getTipo())) {
+            advance();
+            String operador = currToken.getValor();
+            advance();
+            fator = new ExpressaoCompleta(fator, parseExpressaoSimples(), currToken.getValor());
+        }
 
         return fator;
     }
@@ -383,12 +394,16 @@ public class Parser {
 
         if (currToken.getTipo() == TokenType.TokenReserved.FUNCTION) {
             advance();
+            expect(TokenType.TokenSimple.ID);
+            advance();
             expect(TokenType.TokenSymbol.ABRE_PARENTESE);
             advance();
 
             List<Argumento> argumentos = new ArrayList<>();
             while (currToken.getTipo() != TokenType.TokenSymbol.FECHA_PARENTESE) {
+                // <argumento> ::= (<variável> | <número> | <chamada de função> | | true | false)
                 argumentos.add(new Argumento(parseExpressao()));
+                advance();
                 if (currToken.getTipo() == TokenType.TokenSymbol.VIRGULA) {
                     advance();
                 }
@@ -426,7 +441,14 @@ public class Parser {
 
         List <Expressao> expressao = new ArrayList<>();
         while (currToken.getTipo() != TokenType.TokenSymbol.PONTO_E_VIRGULA) {
-            expressao.add(parseExpressao());            
+            expressao.add(parseExpressao());
+            if (tokens.get(tokens.indexOf(currToken) + 1).getTipo() == TokenType.TokenSymbol.PONTO_E_VIRGULA) {
+                advance();
+                break;
+            }
+            if (currToken.getTipo() == TokenType.TokenReserved.TRUE || currToken.getTipo() == TokenType.TokenReserved.FALSE) {
+                advance();                
+            }
         }
         expect(TokenType.TokenSymbol.PONTO_E_VIRGULA);
 
