@@ -32,6 +32,12 @@ public class App {
                         break;
                     end
 
+                    if ((x_1 + x_2) < 20) do
+                        x_1 := x_1 + 1;
+                    else
+                        print(0);
+                    end
+
                     procedure#menos(x_1, x_2);
                 end
                 """;
