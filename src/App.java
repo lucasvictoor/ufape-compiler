@@ -36,6 +36,12 @@ public class App {
                         break;
                     end
 
+                    if ((x_1 + x_2) < 20) do
+                        x_1 := x_1 + 1;
+                    else
+                        print(0);
+                    end
+
                     x_2 := x_2 * 2 / 3000;
                     x_3 := function#soma(1, 2);
                     procedure#menos(x_1, x_2);
