@@ -1,14 +1,16 @@
 package ast;
 
-public class ComandoCondicional extends Comando {
-    private Expressao expressao;
-    private Comando comando;
-    private Comando comandoElse;
+import java.util.List;
 
-    public ComandoCondicional(Expressao expressao, Comando comando, Comando comandoElse) {
+public class ComandoCondicional extends Comando {
+    private Expressao expressao;    
+    private List<Comando> comandosIf;   
+    private List<Comando> comandosElse; 
+
+    public ComandoCondicional(Expressao expressao, List<Comando> comandosIf, List<Comando> comandosElse) {
         this.expressao = expressao;
-        this.comando = comando;
-        this.comandoElse = comandoElse;
+        this.comandosIf = comandosIf;
+        this.comandosElse = comandosElse;
     }
 
     public Expressao getExpressao() {
@@ -19,28 +21,28 @@ public class ComandoCondicional extends Comando {
         this.expressao = expressao;
     }
 
-    public Comando getComando() {
-        return comando;
+    public List<Comando> getComandosIf() {
+        return comandosIf;
     }
 
-    public void setComando(Comando comando) {
-        this.comando = comando;
+    public void setComandosIf(List<Comando> comandosIf) {
+        this.comandosIf = comandosIf;
     }
 
-    public Comando getComandoElse() {
-        return comandoElse;
+    public List<Comando> getComandosElse() {
+        return comandosElse;
     }
 
-    public void setComandoElse(Comando comandoElse) {
-        this.comandoElse = comandoElse;
+    public void setComandosElse(List<Comando> comandosElse) {
+        this.comandosElse = comandosElse;
     }
 
     @Override
     public String toString() {
         return "ComandoCondicional{" +
                 "expressao=" + expressao +
-                ", comando=" + comando +
-                ", comandoElse=" + comandoElse +
+                ", comandosIf=" + comandosIf +
+                ", comandosElse=" + (comandosElse.isEmpty() ? "null" : comandosElse) +
                 '}';
     }
 }
