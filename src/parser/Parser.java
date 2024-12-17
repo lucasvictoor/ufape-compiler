@@ -34,15 +34,12 @@ public class Parser {
 
     private void expect(Enum tipo){
         if (currToken.getTipo() != tipo) {
-            //System.out.println("Erro de sintaxe: esperado " + tipo + " mas encontrado " + currToken.getTipo() + " na linha " + currToken.getLinha() + " e coluna " + currToken.getColuna());
             throw new SyntaxError("Erro de sintaxe: esperado " + tipo + " mas encontrado " + currToken.getTipo() + " na linha " + currToken.getLinha() + " e coluna " + currToken.getColuna());
         }
-        //advance();   
     }
 
     private void expectIn(List<Enum> tipos){
         if (!tipos.contains(currToken.getTipo())) {
-            //System.out.println("Erro de sintaxe: esperado " + tipos + " mas encontrado " + currToken.getTipo());
             throw new SyntaxError("Erro de sintaxe: esperado " + tipos + " mas encontrado " + currToken.getTipo() + " na linha " + currToken.getLinha() + " e coluna " + currToken.getColuna());
         }
     }
@@ -105,10 +102,6 @@ public class Parser {
 
         do {
             variaveis.add(parseDeclaracaoVariavel());
-            //if (currToken.getTipo() == TokenType.TokenSymbol.VIRGULA) {
-            //    System.out.println("VIRGULA");
-            //    advance();
-            //}
         } while (TokenType.TokenSymbol.PONTO_E_VIRGULA != currToken.getTipo() && TokenType.TokenReserved.VAR != currToken.getTipo());
 
         expect(TokenType.TokenSymbol.PONTO_E_VIRGULA);
@@ -137,6 +130,7 @@ public class Parser {
 
         Expressao inicializacao = null;
         if (currToken.getTipo() == TokenType.TokenOperator.ATRIBUICAO) {
+            expect(TokenType.TokenOperator.ATRIBUICAO);
             advance();
             inicializacao = parseExpressao();
             advance();
@@ -204,7 +198,7 @@ public class Parser {
             return new DeclaracaoProcedure(nome, bloco, parametros);
         }
 
-        return new DeclaracaoSubRotina(nome, null, parametros);
+        return new DeclaracaoSubRotina(nome, bloco, parametros);
     }
 
     private Comando parseComandos(){
@@ -217,7 +211,6 @@ public class Parser {
 
         if (currToken.getTipo() == TokenType.TokenReserved.WHILE) {
             return parseComandoEnquanto();
-            //return new ComandoEnquanto(null, null);
         }
 
         if (currToken.getTipo() == TokenType.TokenReserved.PRINT) {
@@ -228,6 +221,7 @@ public class Parser {
             advance();
             expect(TokenType.TokenSymbol.FECHA_PARENTESE);
             advance();
+            expect(TokenType.TokenSymbol.PONTO_E_VIRGULA);
 
             return new ComandoLeitura(expressao);
         }
@@ -235,6 +229,7 @@ public class Parser {
         if (currToken.getTipo() == TokenType.TokenReserved.PROCEDURE) {
             advance();
             expect(TokenType.TokenSimple.ID);
+            String nome = currToken.getValor();
             advance();
             expect(TokenType.TokenSymbol.ABRE_PARENTESE);
             advance();
@@ -248,12 +243,16 @@ public class Parser {
             }
             expect(TokenType.TokenSymbol.FECHA_PARENTESE);
             advance();
-            return new ComandoChamadaProcedure(null, null);
+            expect(TokenType.TokenSymbol.PONTO_E_VIRGULA);
+            return new ComandoChamadaProcedure(nome, expressao);
         }
 
         if (currToken.getTipo() == TokenType.TokenSimple.ID) {
             return parseComandoAtribuicao();
-            //return new ComandoAtribuicao(null, null);
+        }
+
+        if (currToken.getTipo() == TokenType.TokenReserved.FUNCTION) {
+            expect(TokenType.TokenReserved.PROCEDURE);            
         }
         
         return null;
@@ -332,10 +331,10 @@ public class Parser {
             String operador = currToken.getValor();
             advance();
             Expressao expressaoSimples2 = parseExpressaoSimples();
+            advance();
             return new ExpressaoCompleta(expressaoSimples, expressaoSimples2, operador);
         }
 
-        //advance();
         return expressaoSimples;
     }
 
@@ -431,12 +430,11 @@ public class Parser {
         if (currToken.getTipo() == TokenType.TokenSymbol.ABRE_PARENTESE) {
             advance();
             Expressao expressao = parseExpressao();
-            advance();
             expect(TokenType.TokenSymbol.FECHA_PARENTESE);
             return expressao;
         }
 
-        throw new RuntimeException("Expect expression.");
+        throw new RuntimeException("Expect expression. Found: " + currToken.getTipo() + " at line " + currToken.getLinha() + " and column " + currToken.getColuna());
     }
 
     public ComandoAtribuicao parseComandoAtribuicao(){
@@ -459,6 +457,9 @@ public class Parser {
             if (currToken.getTipo() == TokenType.TokenReserved.TRUE || currToken.getTipo() == TokenType.TokenReserved.FALSE) {
                 advance();                
             }
+            if (currToken.getLinha() < tokens.get(tokens.indexOf(currToken) + 1).getLinha()) {
+                break;                
+            }
         }
         expect(TokenType.TokenSymbol.PONTO_E_VIRGULA);
 
@@ -473,7 +474,12 @@ public class Parser {
     
         expect(TokenType.TokenSymbol.ABRE_PARENTESE);
         advance();
-        Expressao condicao = parseExpressao();
+
+        List<Expressao> condicao = new ArrayList<>();
+        while (currToken.getTipo() != TokenType.TokenSymbol.FECHA_PARENTESE) {
+            condicao.add(parseExpressao());
+        }
+
         expect(TokenType.TokenSymbol.FECHA_PARENTESE);
         advance();
     
