@@ -38,6 +38,12 @@ public class Lexer {
 
             if (Character.isWhitespace(charAtual)) {
                 skipWhitespace();
+            // Tratamento de comentários de linha: "//"
+            } else if (charAtual == '/' && (posicao + 1 < codigo.length() && codigo.charAt(posicao + 1) == '/')) {
+                skipComentarioLinha();
+            // Tratamento de comentários de bloco: "/* ... */"
+            } else if (charAtual == '/' && (posicao + 1 < codigo.length() && codigo.charAt(posicao + 1) == '*')) {
+                skipComentarioBloco();
             } else if (isMatch("[a-zA-Z_]", charAtual)) {
                 // System.out.println("Letra charAtual: " + charAtual);
                 tokens.add(lexemaIdentificador());
@@ -207,4 +213,66 @@ public class Lexer {
         Matcher matcher = pattern.matcher(String.valueOf(charAtual));
         return matcher.matches();
     }
+
+    private void ignorarComentarios() {
+        if (posicao < codigo.length() - 1) {
+            // Detecta comentários de linha: "//"
+            if (codigo.charAt(posicao) == '/' && codigo.charAt(posicao + 1) == '/') {
+                posicao += 2;
+                coluna += 2;
+                while (posicao < codigo.length() && codigo.charAt(posicao) != '\n') {
+                    posicao++;
+                    coluna++;
+                }
+            }
+            // Detecta comentários de bloco: "/* ... */"
+            else if (codigo.charAt(posicao) == '/' && codigo.charAt(posicao + 1) == '*') {
+                posicao += 2;
+                coluna += 2;
+                while (posicao < codigo.length() - 1) {
+                    if (codigo.charAt(posicao) == '*' && codigo.charAt(posicao + 1) == '/') {
+                        posicao += 2;
+                        coluna += 2;
+                        break;
+                    }
+                    if (codigo.charAt(posicao) == '\n') {
+                        linha++;
+                        coluna = 1;
+                    } else {
+                        coluna++;
+                    }
+                    posicao++;
+                }
+            }
+        }
+    }
+    
+    private void skipComentarioLinha() {
+        posicao += 2;
+        coluna += 2;
+        while (posicao < codigo.length() && codigo.charAt(posicao) != '\n') {
+            posicao++;
+            coluna++;
+        }
+    }
+    
+    private void skipComentarioBloco() {
+        posicao += 2;
+        coluna += 2;
+        while (posicao < codigo.length() - 1) {
+            if (codigo.charAt(posicao) == '*' && codigo.charAt(posicao + 1) == '/') {
+                posicao += 2;
+                coluna += 2;
+                break;
+            }
+            if (codigo.charAt(posicao) == '\n') {
+                linha++;
+                coluna = 1;
+            } else {
+                coluna++;
+            }
+            posicao++;
+        }
+    }
+    
 }
