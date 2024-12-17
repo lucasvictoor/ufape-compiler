@@ -7,20 +7,30 @@ import ast.*;
 import lexer.Token;
 import lexer.TokenType;
 import lexer.TokenType.TokenOperator;
+import lexer.TokenType.TokenReserved;
 
 public class Parser {
     private List<Token> tokens;
     private Token currToken;
     private Token proxToken;
+    private int posicao;
 
     public Parser(List<Token> tokens) {
         this.tokens = tokens;
         this.currToken = tokens.get(0);
+        this.posicao = 0;
     }
 
-    private void advance(){
-        currToken = tokens.get(tokens.indexOf(currToken) + 1);
+    private void advance() {
+        if (posicao + 1 < tokens.size()) {
+            posicao++;
+            currToken = tokens.get(posicao);
+        } else {
+            // Evita ultrapassar o limite da lista de tokens
+            currToken = new Token(TokenType.TokenReserved.EOF, "EOF", currToken.getLinha(), currToken.getColuna());
+        }
     }
+    
 
     private void expect(Enum tipo){
         if (currToken.getTipo() != tipo) {
@@ -200,7 +210,7 @@ public class Parser {
         // <comando> ::= (<atribuição_chprocedimento>|<comando condicional> |<comando enquanto> |<comando leitura> |<comandos>)
         
         if (currToken.getTipo() == TokenType.TokenReserved.IF) {
-            return new ComandoCondicional(null, null, null);
+            return parseComandoCondicional();
         }
 
         if (currToken.getTipo() == TokenType.TokenReserved.WHILE) {
@@ -432,4 +442,56 @@ public class Parser {
 
         return new ComandoAtribuicao(variavel, expressao);
     }
+
+    private Comando parseComandoCondicional() {
+        // <comando condicional> ::= if <expressão> do <comando> [else <comando>] end
+    
+        expect(TokenType.TokenReserved.IF);
+        advance();
+    
+        expect(TokenType.TokenSymbol.ABRE_PARENTESE);
+        advance();
+        Expressao condicao = parseExpressao();
+        expect(TokenType.TokenSymbol.FECHA_PARENTESE);
+        advance();
+    
+        expect(TokenType.TokenReserved.DO);
+        advance();
+    
+        List<Comando> comandosIf = new ArrayList<>();
+        while (currToken.getTipo() != TokenType.TokenReserved.END &&
+               currToken.getTipo() != TokenType.TokenReserved.ELSE &&
+               currToken.getTipo() != TokenType.TokenReserved.EOF) {
+            comandosIf.add(parseComandos());
+    
+            if (currToken.getTipo() == TokenType.TokenSymbol.PONTO_E_VIRGULA) {
+                advance();
+            }
+        }
+    
+        List<Comando> comandosElse = new ArrayList<>();
+        if (currToken.getTipo() == TokenType.TokenReserved.ELSE) {
+            advance();
+    
+            while (currToken.getTipo() != TokenType.TokenReserved.END &&
+                   currToken.getTipo() != TokenType.TokenReserved.EOF) {
+                comandosElse.add(parseComandos());
+    
+                if (currToken.getTipo() == TokenType.TokenSymbol.PONTO_E_VIRGULA) {
+                    advance();
+                }
+            }
+        }
+    
+        expect(TokenType.TokenReserved.END);
+    
+        if (posicao + 1 < tokens.size()) {
+            advance();
+        } else {
+            throw new SyntaxError("Erro: esperado END, mas alcançado o fim do arquivo.");
+        }
+    
+        return new ComandoCondicional(condicao, comandosIf, comandosElse);
+    }      
+    
 }
