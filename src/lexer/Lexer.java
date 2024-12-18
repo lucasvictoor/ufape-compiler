@@ -125,6 +125,8 @@ public class Lexer {
                 return new Token(TokenType.TokenSymbol.ABRE_PARENTESE, "(", inicioLinha, inicioColuna);
             case ')':
                 return new Token(TokenType.TokenSymbol.FECHA_PARENTESE, ")", inicioLinha, inicioColuna);
+            case '#':
+                return new Token(TokenType.TokenSymbol.HASH, "#", inicioLinha, inicioColuna);
             default:
                 throw new RuntimeException("Caractere inválido: " + charAtual);
         }
