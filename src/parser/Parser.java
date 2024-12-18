@@ -56,6 +56,9 @@ public class Parser {
         Bloco bloco = parseBloco();
         expect(TokenType.TokenReserved.END);
 
+        advance();
+        expect(TokenType.TokenReserved.EOF);
+
         System.out.println("Análise sintática concluída com sucesso. Nenhum erro encontrado.");
 
         return new Programa(nome, bloco);
@@ -172,6 +175,8 @@ public class Parser {
         expect(TokenType.TokenSymbol.DOIS_PONTOS);
         advance();
 
+        expectIn(List.of(TokenType.TokenReserved.INTEGER, TokenType.TokenReserved.BOOLEAN, TokenType.TokenReserved.VOID));
+
         if (currToken.getTipo() == TokenType.TokenReserved.INTEGER || currToken.getTipo() == TokenType.TokenReserved.BOOLEAN) {
             tipoRetorno = currToken.getValor();
             advance();
@@ -254,8 +259,13 @@ public class Parser {
         if (currToken.getTipo() == TokenType.TokenReserved.FUNCTION) {
             expect(TokenType.TokenReserved.PROCEDURE);            
         }
+
+        if (currToken.getTipo() == TokenType.TokenSymbol.PONTO_E_VIRGULA) {
+            return null;
+        }
         
-        return null;
+        throw new RuntimeException("Erro de sintaxe: comando inválido na linha " + currToken.getLinha() + " e coluna " + currToken.getColuna() + ". Encontrado: " + currToken.getTipo());
+        //return null;
     }
 
     public ComandoEnquanto parseComandoEnquanto(){
@@ -270,12 +280,23 @@ public class Parser {
 
         List<Expressao> expressao = new ArrayList<>();
         
+        Integer parenteses = 1;
         while (currToken.getTipo() != TokenType.TokenSymbol.FECHA_PARENTESE) {
+            if (tokens.get(tokens.indexOf(currToken) + 1).getTipo() == TokenType.TokenSymbol.ABRE_PARENTESE) {
+                parenteses++;
+            }
             expressao.add(parseExpressao());
+            if (tokens.get(tokens.indexOf(currToken) + 1).getTipo() == TokenType.TokenSymbol.FECHA_PARENTESE) {
+                parenteses--;                
+            }
         }
 
 
         expect(TokenType.TokenSymbol.FECHA_PARENTESE);
+        parenteses--;
+        if (parenteses != 0) {
+            throw new SyntaxError(parenteses + " Erro de sintaxe: parenteses não fechados na linha " + currToken.getLinha() + " e coluna " + currToken.getColuna());
+        }
         advance();
 
         expect(TokenType.TokenReserved.DO);
@@ -310,6 +331,9 @@ public class Parser {
 
     public Expressao parseExpressao(){
         //<expressão>::= <expressão simples> [<operador relacional><expressão simples>];
+        if (currToken.getTipo() == TokenType.TokenSymbol.FECHA_PARENTESE) {
+            System.out.println("Aqui");
+        }
 
         Expressao expressaoSimples = parseExpressaoSimples();
 
@@ -434,7 +458,7 @@ public class Parser {
             return expressao;
         }
 
-        throw new RuntimeException("Expect expression. Found: " + currToken.getTipo() + " at line " + currToken.getLinha() + " and column " + currToken.getColuna());
+        throw new RuntimeException("Esperado uma expressão. Encontrado: " + currToken.getTipo() + " na linha " + currToken.getLinha() + " e coluna " + currToken.getColuna());
     }
 
     public ComandoAtribuicao parseComandoAtribuicao(){
@@ -476,8 +500,21 @@ public class Parser {
         advance();
 
         List<Expressao> condicao = new ArrayList<>();
+        Integer parenteses = 1;
         while (currToken.getTipo() != TokenType.TokenSymbol.FECHA_PARENTESE) {
+            if (tokens.get(tokens.indexOf(currToken) + 1).getTipo() == TokenType.TokenSymbol.ABRE_PARENTESE) {
+                parenteses++;
+            }
             condicao.add(parseExpressao());
+            if (tokens.get(tokens.indexOf(currToken) + 1).getTipo() == TokenType.TokenSymbol.FECHA_PARENTESE) {
+                parenteses--;                
+            }
+        }
+
+        expect(TokenType.TokenSymbol.FECHA_PARENTESE);
+        parenteses--;
+        if (parenteses != 0) {
+            throw new SyntaxError(parenteses + " Erro de sintaxe: parenteses não fechados na linha " + currToken.getLinha() + " e coluna " + currToken.getColuna());
         }
 
         expect(TokenType.TokenSymbol.FECHA_PARENTESE);
