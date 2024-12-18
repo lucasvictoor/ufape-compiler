@@ -18,7 +18,7 @@ compilador-projeto/
 │ │ ├── ASTNode.java 
 │ ├── symbol/ 
 │ │ ├── SymbolTable.java 
-│ │ ├── SymbolTableEntry.java 
+│ │ ├── SymbolEntry.java 
 │ ├── main/ 
 │ │ ├── App.java 
 ├── README.md
