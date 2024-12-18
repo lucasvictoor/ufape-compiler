@@ -6,7 +6,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import symbol.SymbolTable;
-import symbol.SymbolTableEntry;
+import symbol.SymbolEntry;
 
 public class Lexer {
 
@@ -15,12 +15,17 @@ public class Lexer {
     private int coluna;
     private int posicao;
     private SymbolTable symbolTable;
+    private String escopoAtual = "global";
 
     public Lexer() {
         this.linha = 1;
         this.coluna = 1;
         this.posicao = 0;
         this.symbolTable = new SymbolTable();
+    }
+
+    private void atualizarEscopo(String novoEscopo) {
+        escopoAtual = novoEscopo;
     }
 
     // Método para a tabela de símbolos
@@ -46,7 +51,11 @@ public class Lexer {
                 skipComentarioBloco();
             } else if (isMatch("[a-zA-Z_]", charAtual)) {
                 // System.out.println("Letra charAtual: " + charAtual);
-                tokens.add(lexemaIdentificador());
+                Token token = lexemaIdentificador();
+                if (token.getValor().equals("while") || token.getValor().equals("if") || token.getValor().equals("def")) {
+                    atualizarEscopo(token.getValor());
+                }
+                tokens.add(token);
             } else if (isMatch("\\d", charAtual)) {
                 tokens.add(lexemaNumerico());
             } else {
@@ -136,36 +145,51 @@ public class Lexer {
         return new Token(TokenType.TokenSimple.NUMERO, numero.toString(), inicioLinha, inicioColuna);
     }
 
+    private String tipoAtual = null;
+
     private Token lexemaIdentificador() {
         int inicioLinha = linha;
         int inicioColuna = coluna;
         StringBuilder identificador = new StringBuilder();
     
-        while (posicao < codigo.length() && isMatch("[a-zA-Z_0-9#]", codigo.charAt(posicao))) {
+        while (posicao < codigo.length() && isMatch("[a-zA-Z_0-9]", codigo.charAt(posicao))) {
             identificador.append(codigo.charAt(posicao));
             posicao++;
             coluna++;
-
-            if (identificador.toString().contains("#")) {
+        }
+    
+        String identificadorString = identificador.toString();
+    
+        // Verifica se o identificador é uma palavra reservada (tipo)
+        if (identificadorString.equals("integer") || identificadorString.equals("boolean")) {
+            tipoAtual = identificadorString; // Atualiza o tipo atual
+            return new Token(TokenType.TokenReserved.valueOf(identificadorString.toUpperCase()), identificadorString, inicioLinha, inicioColuna);
+        }
+    
+        // Verifica se o identificador não é uma palavra reservada
+        boolean isReserved = false;
+        for (TokenType.TokenReserved reserved : TokenType.TokenReserved.values()) {
+            if (reserved.name().equals(identificadorString.toUpperCase())) {
+                isReserved = true;
                 break;
             }
         }
     
-        String identificadorString = identificador.toString();
-        TokenType.TokenReserved tokenReserved = getTokenReservado(identificadorString);
+        if (!isReserved) {
+            // Verifica se o identificador já existe na tabela de símbolos no mesmo escopo
+            boolean alreadyExists = symbolTable.getEntries().stream()
+                .anyMatch(entry -> entry.getNome().equals(identificadorString) && entry.getEscopo().equals(escopoAtual));
     
-        if (tokenReserved != null) {
-            return new Token(tokenReserved, identificadorString, inicioLinha, inicioColuna);
-        } else {
-            // Adiciona o identificador à tabela de símbolos
-            // Verifica se há um tipo previamente identificado antes do identificador
-            String tipo = getPreviousType();
-    
-            symbolTable.addEntry(identificadorString, tipo, "variavel", "global", null, inicioLinha, inicioColuna);
-    
-            return new Token(TokenType.TokenSimple.ID, identificadorString, inicioLinha, inicioColuna);
+            if (!alreadyExists) {
+                // Adiciona o identificador à tabela de símbolos com o tipo atual
+                symbolTable.addEntry(identificadorString, tipoAtual, escopoAtual, inicioLinha, inicioColuna);
+            }
+            tipoAtual = null; // Reseta o tipo após usá-lo
         }
-    }
+    
+        return new Token(TokenType.TokenSimple.ID, identificadorString, inicioLinha, inicioColuna);
+    }    
+    
     
     // Método auxiliar para pegar o tipo da variável no contexto anterior
     private String getPreviousType() {
@@ -174,18 +198,15 @@ public class Lexer {
             prevPos--;
         }
     
-        StringBuilder tipo = new StringBuilder();
-        while (prevPos >= 0 && isMatch("[a-zA-Z]", codigo.charAt(prevPos))) {
-            tipo.insert(0, codigo.charAt(prevPos));
-            prevPos--;
+        if (prevPos >= 6 && codigo.substring(prevPos - 6, prevPos + 1).equals("integer")) {
+            return "integer";
+        }
+        if (prevPos >= 6 && codigo.substring(prevPos - 6, prevPos + 1).equals("boolean")) {
+            return "boolean";
         }
     
-        String tipoString = tipo.toString();
-        if (tipoString.equals("integer") || tipoString.equals("boolean")) {
-            return tipoString;
-        }
         return null;
-    }
+    }    
     
 
     private TokenType.TokenReserved getTokenReservado(String id) {
