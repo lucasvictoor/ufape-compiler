@@ -46,7 +46,7 @@ O parser é responsável por analisar a lista de tokens gerada pelo lexer e cons
 A Tabela de Símbolos armazena informações sobre variáveis, funções e procedimentos definidos no código fonte.
 
 - **SymbolTable.java**: Implementa a Tabela de Símbolos.
-- **SymbolTableEntry.java**: Representa uma entrada na Tabela de Símbolos.
+- **SymbolEntry.java**: Representa uma entrada na Tabela de Símbolos.
 
 ### Main
 
