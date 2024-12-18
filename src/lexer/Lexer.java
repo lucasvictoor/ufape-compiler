@@ -166,7 +166,7 @@ public class Lexer {
             return new Token(TokenType.TokenReserved.valueOf(identificadorString.toUpperCase()), identificadorString, inicioLinha, inicioColuna);
         }
     
-        // Verifica se o identificador não é uma palavra reservada
+        // Verifica se é uma palavra reservada (ex: var, def)
         boolean isReserved = false;
         for (TokenType.TokenReserved reserved : TokenType.TokenReserved.values()) {
             if (reserved.name().equals(identificadorString.toUpperCase())) {
@@ -176,19 +176,31 @@ public class Lexer {
         }
     
         if (!isReserved) {
-            // Verifica se o identificador já existe na tabela de símbolos no mesmo escopo
+            // Busca se o identificador já existe na tabela (em qualquer escopo)
+            String tipoExistente = null;
+            for (SymbolEntry entry : symbolTable.getEntries()) {
+                if (entry.getNome().equals(identificadorString)) {
+                    tipoExistente = entry.getTipo();
+                    break;
+                }
+            }
+    
+            // Usa o tipo existente, ou o tipoAtual, ou "desconhecido"
+            String tipoParaAdicionar = tipoExistente != null ? tipoExistente : (tipoAtual != null ? tipoAtual : "desconhecido");
+    
+            // Verifica se o identificador já existe no mesmo escopo
             boolean alreadyExists = symbolTable.getEntries().stream()
                 .anyMatch(entry -> entry.getNome().equals(identificadorString) && entry.getEscopo().equals(escopoAtual));
     
             if (!alreadyExists) {
-                // Adiciona o identificador à tabela de símbolos com o tipo atual
-                symbolTable.addEntry(identificadorString, tipoAtual, escopoAtual, inicioLinha, inicioColuna);
+                symbolTable.addEntry(identificadorString, tipoParaAdicionar, escopoAtual, inicioLinha, inicioColuna);
             }
-            tipoAtual = null; // Reseta o tipo após usá-lo
         }
     
         return new Token(TokenType.TokenSimple.ID, identificadorString, inicioLinha, inicioColuna);
-    }    
+    }
+      
+     
     
     
     // Método auxiliar para pegar o tipo da variável no contexto anterior
