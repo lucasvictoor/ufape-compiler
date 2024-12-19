@@ -156,20 +156,32 @@ public class Parser {
 
         String tipoRetorno = "";
         Expressao retorno = null;
+        int parenteses = 0;
 
         while (TokenType.TokenSymbol.DOIS_PONTOS != currToken.getTipo()) {
             if (TokenType.TokenSymbol.ABRE_PARENTESE == currToken.getTipo()) {
+                parenteses++;
                 advance();
                 while (TokenType.TokenSymbol.FECHA_PARENTESE != currToken.getTipo()) {
+                    if (currToken.getTipo() == TokenType.TokenSymbol.ABRE_PARENTESE) {
+                        parenteses++;                        
+                    }
                     expect(TokenType.TokenSimple.ID);
                     parametros.add(currToken.getValor());
+                    if (currToken.getTipo() == TokenType.TokenSymbol.FECHA_PARENTESE) {
+                        parenteses--;                        
+                    }
                     advance();
                     if (TokenType.TokenSymbol.VIRGULA == currToken.getTipo()) {
                         advance();
+                        expect(TokenType.TokenSimple.ID);
                     }
                 }
                 expect(TokenType.TokenSymbol.FECHA_PARENTESE);
                 advance();
+                if (parenteses != 0) {
+                    break;
+                }
             }
         }
         expect(TokenType.TokenSymbol.DOIS_PONTOS);
@@ -232,21 +244,40 @@ public class Parser {
         }
 
         if (currToken.getTipo() == TokenType.TokenReserved.PROCEDURE) {
+            //<argumento> ::= (<variável> | <número> | <chamada de função> | | true | false)
+            List<Enum> tiposArgumentos = new ArrayList<>();
+            tiposArgumentos.add(TokenType.TokenSimple.ID);
+            tiposArgumentos.add(TokenType.TokenSimple.NUMERO);
+            tiposArgumentos.add(TokenType.TokenReserved.FUNCTION);
+            tiposArgumentos.add(TokenType.TokenReserved.TRUE);
+            tiposArgumentos.add(TokenType.TokenReserved.FALSE);
             advance();
             expect(TokenType.TokenSimple.ID);
             String nome = currToken.getValor();
             advance();
             expect(TokenType.TokenSymbol.ABRE_PARENTESE);
             advance();
+            int parenteses = 1;
             List<Expressao> expressao = new ArrayList<>();
             while (currToken.getTipo() != TokenType.TokenSymbol.FECHA_PARENTESE) {
+                if (currToken.getTipo() == TokenType.TokenSymbol.ABRE_PARENTESE) {
+                    parenteses++;                    
+                }
                 expressao.add(parseExpressao());
                 advance();
                 if (currToken.getTipo() == TokenType.TokenSymbol.VIRGULA) {
                     advance();
+                    expectIn(tiposArgumentos);
+                }
+                if (currToken.getTipo() == TokenType.TokenSymbol.FECHA_PARENTESE) {
+                    parenteses--;                                        
                 }
             }
             expect(TokenType.TokenSymbol.FECHA_PARENTESE);
+            if (parenteses != 0) {
+                throw new SyntaxError(parenteses + " Erro de sintaxe: parenteses não fechados na linha " + currToken.getLinha() + " e coluna " + currToken.getColuna());
+            }
+            
             advance();
             expect(TokenType.TokenSymbol.PONTO_E_VIRGULA);
             return new ComandoChamadaProcedure(nome, expressao);
@@ -270,17 +301,16 @@ public class Parser {
 
     public ComandoEnquanto parseComandoEnquanto(){
         //<comando enquanto> ::= while <expressão> do <comando> {<comando desvio condicional> } end
-
-
+    
         expect(TokenType.TokenReserved.WHILE);
         advance();
-
+    
         expect(TokenType.TokenSymbol.ABRE_PARENTESE);
         advance();
-
+    
         List<Expressao> expressao = new ArrayList<>();
         
-        Integer parenteses = 1;
+        int parenteses = 1;
         while (currToken.getTipo() != TokenType.TokenSymbol.FECHA_PARENTESE) {
             if (tokens.get(tokens.indexOf(currToken) + 1).getTipo() == TokenType.TokenSymbol.ABRE_PARENTESE) {
                 parenteses++;
@@ -290,20 +320,19 @@ public class Parser {
                 parenteses--;                
             }
         }
-
-
+    
         expect(TokenType.TokenSymbol.FECHA_PARENTESE);
         parenteses--;
         if (parenteses != 0) {
             throw new SyntaxError(parenteses + " Erro de sintaxe: parenteses não fechados na linha " + currToken.getLinha() + " e coluna " + currToken.getColuna());
         }
         advance();
-
+    
         expect(TokenType.TokenReserved.DO);
         advance();
-
+    
         List<Comando> comando = new ArrayList<>();
-
+    
         while (currToken.getTipo() != TokenType.TokenReserved.END) {
             comando.add(parseComandos());
             if (currToken.getTipo() == TokenType.TokenSymbol.PONTO_E_VIRGULA) {
@@ -321,22 +350,18 @@ public class Parser {
                 comando.add(comandoBreak);
             }
         }
-
-
+    
         expect(TokenType.TokenReserved.END);
         advance();
-
+    
         return new ComandoEnquanto(expressao, comando);
     }
 
     public Expressao parseExpressao(){
         //<expressão>::= <expressão simples> [<operador relacional><expressão simples>];
-        if (currToken.getTipo() == TokenType.TokenSymbol.FECHA_PARENTESE) {
-            System.out.println("Aqui");
-        }
-
+    
         Expressao expressaoSimples = parseExpressaoSimples();
-
+    
         List<Enum> operadorRelacional = new ArrayList<>();
         operadorRelacional.add(TokenType.TokenOperator.MAIOR);
         operadorRelacional.add(TokenType.TokenOperator.MENOR);
@@ -344,13 +369,13 @@ public class Parser {
         operadorRelacional.add(TokenType.TokenOperator.MENORIGUAL);
         operadorRelacional.add(TokenType.TokenOperator.IGUAL);
         operadorRelacional.add(TokenType.TokenOperator.DIFERENTE);
-
+    
         Token proxToken = tokens.get(tokens.indexOf(currToken) + 1);
-
+    
         if (operadorRelacional.contains(proxToken.getTipo())) {
             advance();           
         }
-
+    
         if (operadorRelacional.contains(currToken.getTipo())) {
             String operador = currToken.getValor();
             advance();
@@ -358,7 +383,7 @@ public class Parser {
             advance();
             return new ExpressaoCompleta(expressaoSimples, expressaoSimples2, operador);
         }
-
+    
         return expressaoSimples;
     }
 
@@ -426,23 +451,40 @@ public class Parser {
         }
 
         if (currToken.getTipo() == TokenType.TokenReserved.FUNCTION) {
+            List<Enum> tiposArgumentos = new ArrayList<>();
+            tiposArgumentos.add(TokenType.TokenSimple.ID);
+            tiposArgumentos.add(TokenType.TokenSimple.NUMERO);
+            tiposArgumentos.add(TokenType.TokenReserved.FUNCTION);
+            tiposArgumentos.add(TokenType.TokenReserved.TRUE);
+            tiposArgumentos.add(TokenType.TokenReserved.FALSE);
             advance();
             expect(TokenType.TokenSimple.ID);
             advance();
             expect(TokenType.TokenSymbol.ABRE_PARENTESE);
             advance();
+            int parenteses = 1;
 
             List<Argumento> argumentos = new ArrayList<>();
             while (currToken.getTipo() != TokenType.TokenSymbol.FECHA_PARENTESE) {
+                if (TokenType.TokenSymbol.ABRE_PARENTESE == currToken.getTipo()) {
+                    parenteses++;                    
+                }
                 // <argumento> ::= (<variável> | <número> | <chamada de função> | | true | false)
                 argumentos.add(new Argumento(parseExpressao()));
                 advance();
                 if (currToken.getTipo() == TokenType.TokenSymbol.VIRGULA) {
                     advance();
+                    expectIn(tiposArgumentos);
+                }
+                if (TokenType.TokenSymbol.FECHA_PARENTESE == currToken.getTipo()) {
+                    parenteses--;                                        
                 }
             }
 
             expect(TokenType.TokenSymbol.FECHA_PARENTESE);
+            if (parenteses != 0) {
+                throw new SyntaxError(parenteses + " Erro de sintaxe: parenteses não fechados na linha " + currToken.getLinha() + " e coluna " + currToken.getColuna());
+            }
             return new ExpressaoFatorChamadaFunction(currToken.getValor(), argumentos);
             
         }
@@ -498,9 +540,9 @@ public class Parser {
     
         expect(TokenType.TokenSymbol.ABRE_PARENTESE);
         advance();
-
+    
         List<Expressao> condicao = new ArrayList<>();
-        Integer parenteses = 1;
+        int parenteses = 1;
         while (currToken.getTipo() != TokenType.TokenSymbol.FECHA_PARENTESE) {
             if (tokens.get(tokens.indexOf(currToken) + 1).getTipo() == TokenType.TokenSymbol.ABRE_PARENTESE) {
                 parenteses++;
@@ -510,14 +552,12 @@ public class Parser {
                 parenteses--;                
             }
         }
-
+    
         expect(TokenType.TokenSymbol.FECHA_PARENTESE);
         parenteses--;
         if (parenteses != 0) {
             throw new SyntaxError(parenteses + " Erro de sintaxe: parenteses não fechados na linha " + currToken.getLinha() + " e coluna " + currToken.getColuna());
         }
-
-        expect(TokenType.TokenSymbol.FECHA_PARENTESE);
         advance();
     
         expect(TokenType.TokenReserved.DO);
