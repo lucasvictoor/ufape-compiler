@@ -15,6 +15,6 @@ public class TokenType {
     }
 
     public enum TokenSymbol {
-        ABRE_PARENTESE, FECHA_PARENTESE, PONTO_E_VIRGULA, DOIS_PONTOS, VIRGULA, HASH;
+        ABRE_PARENTESE, FECHA_PARENTESE, PONTO_E_VIRGULA, DOIS_PONTOS, VIRGULA;
     }
 }

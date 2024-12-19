@@ -55,25 +55,20 @@ public class App {
                 MODELO begin
                     var integer x_1 := 10;
                     var integer x_2 := 20;
-                    var integer x_3, x_4;
-                    var boolean x_5 := true;
+                    var integer x_4;
 
-                    def soma (x_1, x_2): integer do
-                        var integer x;
-                        x := x_1 + x_2;
-                        return x;
-                    end
-
-                    def menos (x_1, x_2): void do
-                        var integer x;
-                        x := x_1 - x_2;
-                        x_5 := false;
-                        print(x);
+                    while (x_1 < 20) do
+                        if(x_1 < 15) do
+                            x_1 := x_1 + 1;
+                        else
+                            x_1 := x_1 + 2;
+                        end
+                        x_4 := x_2 * 2 / 3;
                     end
                 end
                 """;
             
-        List<Token> tokens = lexer.tokenize(sourceCode2);
+        List<Token> tokens = lexer.tokenize(sourceCode);
 
         for (Token token : tokens) {
             System.out.println(token);
@@ -82,10 +77,10 @@ public class App {
         // Exibe a tabela de símbolos
         System.out.println("\n");
         SymbolTable symbolTable = lexer.getSymbolTable();
-        symbolTable.printTable();
+        //symbolTable.printTable();
 
-        //Parser parser = new Parser(tokens);
-        //ASTNode programa = parser.parsePrograma();
+        Parser parser = new Parser(tokens);
+        ASTNode programa = parser.parsePrograma();
 
         //System.out.println(programa.toString());
 
