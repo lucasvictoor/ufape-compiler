@@ -130,12 +130,10 @@ public class Parser {
         return variaveis;
     }
 
-    private DeclaracaoVariavel parseDeclaracaoVariavel(){
+    private DeclaracaoVariavel parseDeclaracaoVariavel() {
         //<declaração de variáveis> ::= <tipo> <identificador> {, <identificador> } {, <atribuição declaração de variáveis> } ; 
 
-        List<Enum> tipos = new ArrayList<>();
-        tipos.add(TokenType.TokenReserved.INTEGER);
-        tipos.add(TokenType.TokenReserved.BOOLEAN);
+        List<Enum> tipos = List.of(TokenType.TokenReserved.INTEGER, TokenType.TokenReserved.BOOLEAN);
         String tipo = "";
 
         if (currToken.getTipo() != TokenType.TokenSymbol.VIRGULA) {
@@ -150,7 +148,7 @@ public class Parser {
         int colunaVariavel = currToken.getColuna();
         advance();
 
-        Expressao inicializacao = null;
+        Expressao inicializacao = new ExpressaoNula();
         if (currToken.getTipo() == TokenType.TokenOperator.ATRIBUICAO) {
             expect(TokenType.TokenOperator.ATRIBUICAO);
             advance();
@@ -388,27 +386,28 @@ public class Parser {
         //<expressão>::= <expressão simples> [<operador relacional><expressão simples>];
     
         Expressao expressaoSimples = parseExpressaoSimples();
-    
-        List<Enum> operadorRelacional = new ArrayList<>();
-        operadorRelacional.add(TokenType.TokenOperator.MAIOR);
-        operadorRelacional.add(TokenType.TokenOperator.MENOR);
-        operadorRelacional.add(TokenType.TokenOperator.MAIORIGUAL);
-        operadorRelacional.add(TokenType.TokenOperator.MENORIGUAL);
-        operadorRelacional.add(TokenType.TokenOperator.IGUAL);
-        operadorRelacional.add(TokenType.TokenOperator.DIFERENTE);
-    
+
+        List<Enum> operadoresRelacionais = List.of(
+            TokenType.TokenOperator.MAIOR,
+            TokenType.TokenOperator.MENOR,
+            TokenType.TokenOperator.MAIORIGUAL,
+            TokenType.TokenOperator.MENORIGUAL,
+            TokenType.TokenOperator.IGUAL,
+            TokenType.TokenOperator.DIFERENTE
+        );
+
         Token proxToken = tokens.get(tokens.indexOf(currToken) + 1);
-    
-        if (operadorRelacional.contains(proxToken.getTipo())) {
+            
+        if (operadoresRelacionais.contains(proxToken.getTipo())) {
             advance();           
         }
-    
-        if (operadorRelacional.contains(currToken.getTipo())) {
+
+        if (operadoresRelacionais.contains(currToken.getTipo())) {
             String operador = currToken.getValor();
             advance();
-            Expressao expressaoSimples2 = parseExpressaoSimples();
+            Expressao expressaoSimplesDireita = parseExpressaoSimples();
             advance();
-            return new ExpressaoCompleta(expressaoSimples, expressaoSimples2, operador);
+            return new ExpressaoCompleta(expressaoSimples, expressaoSimplesDireita, operador);
         }
     
         return expressaoSimples;
@@ -445,19 +444,22 @@ public class Parser {
         return termo;
     }
 
-    public Expressao parseTermo(){
+    public Expressao parseTermo() {
         // <termo> ::= <fator> { ( * | / ) <fator> }
         Expressao fator = parseFator();
-        
-        List<TokenType.TokenOperator> operadoresEscala = new ArrayList<>();
-        operadoresEscala.add(TokenType.TokenOperator.VEZES);
-        operadoresEscala.add(TokenType.TokenOperator.DIVIDIDO);
+
+        List<TokenType.TokenOperator> operadoresEscala = List.of(
+            TokenType.TokenOperator.VEZES,
+            TokenType.TokenOperator.DIVIDIDO
+        );
 
         while (operadoresEscala.contains(tokens.get(tokens.indexOf(currToken) + 1).getTipo())) {
             advance();
             String operador = currToken.getValor();
             advance();
-            fator = new ExpressaoCompleta(fator, parseExpressaoSimples(), currToken.getValor());
+            System.out.println("Operador: " + operador + " na linha " + currToken.getLinha() + "e token " + currToken.getTipo());
+            Expressao fatorDireita = parseFator();
+            fator = new ExpressaoCompleta(fator, fatorDireita, operador);
         }
 
         return fator;
