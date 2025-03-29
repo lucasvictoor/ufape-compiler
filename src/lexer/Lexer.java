@@ -161,7 +161,7 @@ public class Lexer {
             // Verifica se há um tipo previamente identificado antes do identificador
             String tipo = getPreviousType();
     
-            symbolTable.addEntry(identificadorString, tipo, "variavel", "global", null, inicioLinha, inicioColuna);
+            symbolTable.addEntry(identificadorString, tipo, "variavel", null, null, inicioLinha, inicioColuna);
     
             return new Token(TokenType.TokenSimple.ID, identificadorString, inicioLinha, inicioColuna);
         }

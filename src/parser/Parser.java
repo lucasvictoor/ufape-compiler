@@ -6,19 +6,22 @@ import java.util.List;
 import ast.*;
 import lexer.Token;
 import lexer.TokenType;
-import lexer.TokenType.TokenOperator;
-import lexer.TokenType.TokenReserved;
+import symbol.SymbolTable;
+import symbol.SymbolTableEntry;
 
 public class Parser {
     private List<Token> tokens;
     private Token currToken;
     private Token proxToken;
     private int posicao;
+    private SymbolTable symbolTable;
+    private String escopo_identificador;
 
-    public Parser(List<Token> tokens) {
+    public Parser(List<Token> tokens, SymbolTable symbolTable) {
         this.tokens = tokens;
         this.currToken = tokens.get(0);
         this.posicao = 0;
+        this.symbolTable = symbolTable;
     }
 
     private void advance() {
@@ -44,10 +47,24 @@ public class Parser {
         }
     }
 
+    public SymbolTable getSymbolTable() {
+        symbolTable.cleanTableByScopeNull();
+        return symbolTable;
+    }
+
+    private void updateSymbolTableEntry(String nome, String tipo, String categoria, String escopo, Object valor, int linha, int coluna) {
+        SymbolTableEntry table = symbolTable.getEntry(nome, linha, coluna);
+        if (table != null) {
+            symbolTable.updateEntry(table.getId(), nome, tipo, categoria, escopo, valor, linha, coluna);
+        }
+    }
+
     public Programa parsePrograma() {
         // <programa> ::= <identificador> begin <bloco> end
 
+        escopo_identificador = "global";
         expect(TokenType.TokenSimple.ID);
+        updateSymbolTableEntry(currToken.getValor(), null, "identificador_programa", escopo_identificador, null, currToken.getLinha(), currToken.getColuna());
         String nome = currToken.getValor();
         advance();
 
@@ -129,6 +146,8 @@ public class Parser {
         advance();
         expect(TokenType.TokenSimple.ID);
         String nomeVariavel = currToken.getValor();
+        int linhaVariavel = currToken.getLinha();
+        int colunaVariavel = currToken.getColuna();
         advance();
 
         Expressao inicializacao = null;
@@ -138,6 +157,8 @@ public class Parser {
             inicializacao = parseExpressao();
             advance();
         }
+
+        updateSymbolTableEntry(nomeVariavel, tipo, "variavel_teste", escopo_identificador, inicializacao, linhaVariavel, colunaVariavel);
 
         return new DeclaracaoVariavel(tipo, nomeVariavel, inicializacao);
     }
@@ -167,6 +188,7 @@ public class Parser {
                         parenteses++;                        
                     }
                     expect(TokenType.TokenSimple.ID);
+                    updateSymbolTableEntry(currToken.getValor(), currToken.getTipo().toString(), "variavel_outro", "local", null, currToken.getLinha(), currToken.getColuna());
                     parametros.add(currToken.getValor());
                     if (currToken.getTipo() == TokenType.TokenSymbol.FECHA_PARENTESE) {
                         parenteses--;                        
@@ -175,6 +197,7 @@ public class Parser {
                     if (TokenType.TokenSymbol.VIRGULA == currToken.getTipo()) {
                         advance();
                         expect(TokenType.TokenSimple.ID);
+                        updateSymbolTableEntry(currToken.getValor(), currToken.getTipo().toString(), "variavel_outro_teste", "local", null, currToken.getLinha(), currToken.getColuna());
                     }
                 }
                 expect(TokenType.TokenSymbol.FECHA_PARENTESE);
@@ -189,6 +212,10 @@ public class Parser {
 
         expectIn(List.of(TokenType.TokenReserved.INTEGER, TokenType.TokenReserved.BOOLEAN, TokenType.TokenReserved.VOID));
 
+        String categoria = currToken.getTipo() == TokenType.TokenReserved.VOID ? "procedimento" : "funcao";
+        updateSymbolTableEntry(nome, currToken.getTipo().toString(), categoria, "global", parametros, currToken.getLinha(), currToken.getColuna());
+        
+        escopo_identificador = "local";
         if (currToken.getTipo() == TokenType.TokenReserved.INTEGER || currToken.getTipo() == TokenType.TokenReserved.BOOLEAN) {
             tipoRetorno = currToken.getValor();
             advance();
