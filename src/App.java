@@ -30,22 +30,22 @@ public class App {
                     end
 
                     while ((x_1 + x_2) < 20) do
-                        x_1 := x_1 + 1;
+                        x_1 := x_1 + 1 - x_2;
                         x_4 := x_2 * 2 / 3;
 
                         break;
                     end
-
+                    
                     if ((x_1 + x_2) < 20) do    // Teste linha comentário
                         x_1 := x_1 + 1;
                     else
-                        print(0);
+                        print(x_1);
                     end
 
                     /* Comentário
                     de bloco */
                     
-                    x_2 := x_2 * 2 / 3000;
+                    x_2 := x_2 * 2 / 3000 + 1 - 2 * 3;
                     procedure#menos(x_1, x_2);
                     x_3 := function#soma(1, 2);
                 end
@@ -70,17 +70,20 @@ public class App {
             
         List<Token> tokens = lexer.tokenize(sourceCode);
 
-        for (Token token : tokens) {
+        /* for (Token token : tokens) {
             System.out.println(token);
-        }
+        } */
 
         // Exibe a tabela de símbolos
         System.out.println("\n");
         SymbolTable symbolTable = lexer.getSymbolTable();
         //symbolTable.printTable();
 
-        Parser parser = new Parser(tokens);
+        Parser parser = new Parser(tokens, symbolTable);
         ASTNode programa = parser.parsePrograma();
+        symbolTable = parser.getSymbolTable();
+
+        symbolTable.printTable();
 
         //System.out.println(programa.toString());
 
