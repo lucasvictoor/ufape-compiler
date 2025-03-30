@@ -25,7 +25,7 @@ public class SemanticAnalyzer {
         analyzeBloco(programa.getBloco());
     }   
 
-    public void analyzeBloco(Bloco bloco) {
+    private void analyzeBloco(Bloco bloco) {
         // Implementar a lógica de análise semântica para blocos aqui
         
         for (DeclaracaoVariavel variavel : bloco.getDeclaracaoVariavel()) {
@@ -41,30 +41,82 @@ public class SemanticAnalyzer {
         }
     }
 
-    public void analyzeDeclaracaoVariavel(DeclaracaoVariavel declaracao) {
+    private void analyzeDeclaracaoVariavel(DeclaracaoVariavel declaracao) {
         // Implementar a lógica de análise semântica para declarações de variáveis aqui
 
         // Validar se quando há atribuição, o tipo da variável é compatível com o valor atribuído
-        if (declaracao.getValorInicializado().getClass() != ExpressaoNula.class) {
-            //declaracao.getValorInicializado(): ExpressaoFatorAtributo{atributo=true}
+        if (declaracao.getValorInicializado().getClass() == ExpressaoFatorAtributo.class) {
             String tipoVariavel = declaracao.getTipo();
             String tipoValorInicializado = declaracao.getValorInicializado().toString().matches("\\w+\\{atributo=\\d+\\}") ? "integer" : "boolean";
             if (!tipoVariavel.equals(tipoValorInicializado)) {
-                System.err.println("Erro semântico: Tipo incompatível na linha ");
+                throw new SemanticError("Tipo da variável " + declaracao.getIdentificador() + " não é compatível com o valor inicializado. Esperado: " + tipoVariavel + ", encontrado: " + tipoValorInicializado);
             }
         }
     }
 
-    public void analyzeDeclaracaoSubRotina(DeclaracaoSubRotina declaracao) {
+    private void analyzeDeclaracaoSubRotina(DeclaracaoSubRotina declaracao) {
         // Implementar a lógica de análise semântica para declarações de sub-rotinas aqui
+        analyzeBloco(declaracao.getBloco());
     }
 
-    public void analyzeComando(Comando comando) {
+    private void analyzeComando(Comando comando) {
         // Implementar a lógica de análise semântica para comandos aqui
+
+        if (comando instanceof ComandoAtribuicao) {
+            analyzeComandoAtribuicao((ComandoAtribuicao) comando);
+        } else if (comando instanceof ComandoCondicional) {
+            analyzeComandoCondicional((ComandoCondicional) comando);
+        } else if (comando instanceof ComandoEnquanto) {
+            analyzeComandoEnquanto((ComandoEnquanto) comando);
+        } else if (comando instanceof ComandoChamadaProcedure) {
+            analyzeComandoChamadaProcedure((ComandoChamadaProcedure) comando);
+        } else if (comando instanceof ComandoLeitura) {
+            analyzeComandoLeitura((ComandoLeitura) comando);
+        } else if (comando instanceof ComandoBreak) {
+            analyzeComandoBreak((ComandoBreak) comando);
+        } else if (comando instanceof ComandoContinue) {
+            analyzeComandoContinue((ComandoContinue) comando);
+        }
+
     }
 
-    public void analyzeExpressao(Expressao expressao) {
+    private void analyzeComandoContinue(ComandoContinue comando) {
+        
+    }
+
+    private void analyzeComandoBreak(ComandoBreak comando) {
+        
+    }
+
+    private void analyzeComandoLeitura(ComandoLeitura comando) {
+        
+    }
+
+    private void analyzeComandoChamadaProcedure(ComandoChamadaProcedure comando) {
+    
+    }
+
+    private void analyzeComandoEnquanto(ComandoEnquanto comando) {
+        
+    }
+
+    private void analyzeComandoCondicional(ComandoCondicional comando) {
+    
+    }
+
+    private void analyzeComandoAtribuicao(ComandoAtribuicao comando) {
+    
+    }
+
+    private void analyzeExpressao(Expressao expressao) {
         // Implementar a lógica de análise semântica para expressões aqui
     }
-    
+
+    private void analyzeTermo(Expressao expressao) {
+        // Implementar a lógica de análise semântica para expressões aqui
+    }
+
+    private void analyzeFator(Expressao expressao) {
+        // Implementar a lógica de análise semântica para expressões aqui
+    }
 }
