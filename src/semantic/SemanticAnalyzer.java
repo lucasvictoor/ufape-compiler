@@ -94,7 +94,25 @@ public class SemanticAnalyzer {
     }
 
     private void analyzeComandoLeitura(ComandoLeitura comando) {
-        
+        Expressao expressao = comando.getExpressao();
+
+        if (expressao instanceof ExpressaoFatorVariavel) {
+            String identificador = ((ExpressaoFatorVariavel) expressao).getIdentificador();
+
+            if (!symbolTable.contains(identificador)) {
+                throw new SemanticError("Variável " + identificador + " não declarada.");
+            }
+
+        } else if (expressao instanceof ExpressaoFatorChamadaFunction) {
+            String nomeFuncao = ((ExpressaoFatorChamadaFunction) expressao).getNome();
+
+            if (!symbolTable.contains(nomeFuncao)) {
+                throw new SemanticError("Função " + nomeFuncao + " não declarada.");
+            }
+
+        } else if (expressao instanceof ExpressaoCompleta) {
+            analyzeExpressao(expressao);
+        }
     }
 
     private void analyzeComandoChamadaProcedure(ComandoChamadaProcedure comando) {
