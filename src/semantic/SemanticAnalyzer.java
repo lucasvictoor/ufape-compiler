@@ -116,9 +116,28 @@ public class SemanticAnalyzer {
     }
 
     private void analyzeComandoChamadaProcedure(ComandoChamadaProcedure comando) {
+        String nomeProcedure = comando.getNome();
     
+        if (!symbolTable.contains(nomeProcedure)) {
+            throw new SemanticError("Procedure '" + nomeProcedure + "' não declarada.");
+        }
+    
+        String categoria = symbolTable.getEntry(nomeProcedure).getCategory();
+        if (!categoria.equalsIgnoreCase("procedimento")) {
+            throw new SemanticError("Identificador '" + nomeProcedure + "' não é uma procedure.");
+        }
+    
+        // Verifica quantidade de parâmetros
+        Object parametrosObj = symbolTable.getEntry(nomeProcedure).getParametros();
+        List<?> parametrosEsperados = parametrosObj instanceof List ? (List<?>) parametrosObj : List.of();
+        List<Expressao> argumentosRecebidos = comando.getParametros();
+    
+        if (parametrosEsperados.size() != argumentosRecebidos.size()) {
+            throw new SemanticError("Procedure '" + nomeProcedure + "' espera " + parametrosEsperados.size() +
+                    " argumento(s), mas recebeu " + argumentosRecebidos.size() + ".");
+        }
     }
-
+    
     private void analyzeComandoEnquanto(ComandoEnquanto comando) {
         boolean previousInLoop = inLoop;
         inLoop = true;
