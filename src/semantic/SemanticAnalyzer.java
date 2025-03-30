@@ -88,7 +88,9 @@ public class SemanticAnalyzer {
     }
 
     private void analyzeComandoBreak(ComandoBreak comando) {
-        
+        if (!inLoop) {
+            throw new SemanticError("'break' utilizado fora de um laço.");
+        }
     }
 
     private void analyzeComandoLeitura(ComandoLeitura comando) {
