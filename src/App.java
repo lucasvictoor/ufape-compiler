@@ -2,8 +2,9 @@ import java.util.List;
 
 import lexer.*;
 import parser.*;
+import semantic.SemanticAnalyzer;
 import symbol.SymbolTable;
-import ast.ASTNode;
+import ast.Programa;
 
 public class App {
     public static void main(String[] args) throws Exception {
@@ -80,12 +81,15 @@ public class App {
         //symbolTable.printTable();
 
         Parser parser = new Parser(tokens, symbolTable);
-        ASTNode programa = parser.parsePrograma();
+        Programa programa = parser.parsePrograma();
         symbolTable = parser.getSymbolTable();
 
-        symbolTable.printTable();
+        //symbolTable.printTable();
 
         //System.out.println(programa.toString());
+
+        SemanticAnalyzer semanticAnalyzer = new SemanticAnalyzer(symbolTable);
+        semanticAnalyzer.analyze(programa);
 
     }
 }
