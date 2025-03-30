@@ -1,11 +1,14 @@
 package semantic;
 
+import java.util.List;
+
 import ast.*;
 import symbol.SymbolTable;
 
 public class SemanticAnalyzer {
     private SymbolTable symbolTable;
     private String currentScope = "global";
+    private boolean inLoop = false;
 
     public SemanticAnalyzer(SymbolTable symbolTable) {
         this.symbolTable = symbolTable;
@@ -79,7 +82,9 @@ public class SemanticAnalyzer {
     }
 
     private void analyzeComandoContinue(ComandoContinue comando) {
-        
+        if (!inLoop) {
+            throw new SemanticError("'continue' utilizado fora de um laço.");
+        }
     }
 
     private void analyzeComandoBreak(ComandoBreak comando) {
@@ -95,7 +100,14 @@ public class SemanticAnalyzer {
     }
 
     private void analyzeComandoEnquanto(ComandoEnquanto comando) {
-        
+        boolean previousInLoop = inLoop;
+        inLoop = true;
+    
+        for (Comando cmd : comando.getComando()) {
+            analyzeComando(cmd);
+        }
+    
+        inLoop = previousInLoop;
     }
 
     private void analyzeComandoCondicional(ComandoCondicional comando) {
