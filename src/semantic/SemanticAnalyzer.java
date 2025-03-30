@@ -5,24 +5,16 @@ import symbol.SymbolTable;
 
 public class SemanticAnalyzer {
     private SymbolTable symbolTable;
-    private int currentScopeLevel;
-    private int currentFunctionLevel;
-    private int currentProcedureLevel;
-    private int currentLine;
-    private int currentColumn;
+    private String currentScope = "global";
 
     public SemanticAnalyzer(SymbolTable symbolTable) {
         this.symbolTable = symbolTable;
-        this.currentScopeLevel = 0;
-        this.currentFunctionLevel = 0;
-        this.currentProcedureLevel = 0;
-        this.currentLine = 0;
-        this.currentColumn = 0;
     }
 
     public void analyze(Programa programa) {
         // Implementar a lógica de análise semântica aqui
         analyzeBloco(programa.getBloco());
+        System.out.println("Análise semântica concluída com sucesso. Nenhum erro encontrado.");
     }   
 
     private void analyzeBloco(Bloco bloco) {
@@ -48,15 +40,21 @@ public class SemanticAnalyzer {
         if (declaracao.getValorInicializado().getClass() == ExpressaoFatorAtributo.class) {
             String tipoVariavel = declaracao.getTipo();
             String tipoValorInicializado = declaracao.getValorInicializado().toString().matches("\\w+\\{atributo=\\d+\\}") ? "integer" : "boolean";
-            if (!tipoVariavel.equals(tipoValorInicializado)) {
-                throw new SemanticError("Tipo da variável " + declaracao.getIdentificador() + " não é compatível com o valor inicializado. Esperado: " + tipoVariavel + ", encontrado: " + tipoValorInicializado);
-            }
+            checkTypeCompatibility(declaracao.getIdentificador(), tipoVariavel, tipoValorInicializado);
+        }
+    }
+
+    private void checkTypeCompatibility(String identificador, String tipoVariavel, String tipoValorAtribuido) {
+        if (!tipoVariavel.toLowerCase().equals(tipoValorAtribuido.toLowerCase())) {
+            throw new SemanticError("Tipo da variável " + identificador + " não é compatível com o valor inicializado. Esperado: " + tipoVariavel + ", encontrado: " + tipoValorAtribuido);
         }
     }
 
     private void analyzeDeclaracaoSubRotina(DeclaracaoSubRotina declaracao) {
         // Implementar a lógica de análise semântica para declarações de sub-rotinas aqui
+        currentScope = "local";
         analyzeBloco(declaracao.getBloco());
+        currentScope = "global";
     }
 
     private void analyzeComando(Comando comando) {
@@ -105,7 +103,39 @@ public class SemanticAnalyzer {
     }
 
     private void analyzeComandoAtribuicao(ComandoAtribuicao comando) {
-    
+        // Implementar a lógica de análise semântica para atribuições aqui
+        String identificadorAtribuicao = comando.getIdentificador();
+        if (!symbolTable.contains(identificadorAtribuicao)) {
+            throw new SemanticError("Variável " + identificadorAtribuicao + " não declarada.");
+        }
+
+        String tipoIdenficadorAtribuicao = symbolTable.getEntry(identificadorAtribuicao).getTipo();
+        
+        for (Expressao expressao : comando.getExpressao()) {
+            if (expressao instanceof ExpressaoFatorVariavel) {
+                ExpressaoFatorVariavel fatorVariavel = (ExpressaoFatorVariavel) expressao;
+                
+                String tipoVariavelAtribuida = symbolTable.getEntry(fatorVariavel.getIdentificador()).getTipo();
+                checkTypeCompatibility(fatorVariavel.getIdentificador(), tipoIdenficadorAtribuicao, tipoVariavelAtribuida);
+            } else if (expressao instanceof ExpressaoFatorAtributo) {
+                ExpressaoFatorAtributo fatorAtributo = (ExpressaoFatorAtributo) expressao;
+                
+                String tipoAtributoAtribuido = fatorAtributo.getAtributo().getClass().getSimpleName();
+                checkTypeCompatibility(fatorAtributo.getAtributo().toString(), tipoIdenficadorAtribuicao, tipoAtributoAtribuido);
+            } else if (expressao instanceof ExpressaoFatorChamadaFunction) {
+                ExpressaoFatorChamadaFunction fatorChamadaFunction = (ExpressaoFatorChamadaFunction) expressao;
+
+                String tipoFuncaoAtribuida = symbolTable.getEntry(fatorChamadaFunction.getNome()).getTipo();
+                checkTypeCompatibility(identificadorAtribuicao, tipoIdenficadorAtribuicao, tipoFuncaoAtribuida);
+            } else if (expressao instanceof ExpressaoCompleta) {
+                analyzeExpressao(expressao);
+            }
+        }
+        
+        //analise expressão [ExpressaoChamadaFunction{nome='', argumentos=''}]
+
+        //analise expressão [ExpressaoCompleta{esquerda='', direita='', operador=''}]
+             
     }
 
     private void analyzeExpressao(Expressao expressao) {

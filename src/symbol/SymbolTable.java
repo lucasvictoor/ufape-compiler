@@ -37,6 +37,24 @@ public class SymbolTable {
         return null;
     }
 
+    public SymbolTableEntry getEntry(String name, String escopo) {
+        for (SymbolTableEntry entry : table) {
+            if (entry.getIdentificador().equals(name) && entry.getScope() == escopo) {
+                return entry;
+            }
+        }
+        return null;
+    }
+
+    public SymbolTableEntry getEntry(String name) {
+        for (SymbolTableEntry entry : table) {
+            if (entry.getIdentificador().equals(name)) {
+                return entry;
+            }
+        }
+        return null;
+    }
+
     public boolean contains(String name) {
         for (SymbolTableEntry entry : table) {
             if (entry.getIdentificador().equals(name)) {
