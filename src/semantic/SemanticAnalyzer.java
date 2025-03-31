@@ -1,11 +1,14 @@
 package semantic;
 
+import java.util.List;
+
 import ast.*;
 import symbol.SymbolTable;
 
 public class SemanticAnalyzer {
     private SymbolTable symbolTable;
     private String currentScope = "global";
+    private boolean inLoop = false;
 
     public SemanticAnalyzer(SymbolTable symbolTable) {
         this.symbolTable = symbolTable;
@@ -79,23 +82,71 @@ public class SemanticAnalyzer {
     }
 
     private void analyzeComandoContinue(ComandoContinue comando) {
-        
+        if (!inLoop) {
+            throw new SemanticError("'continue' utilizado fora de um laço.");
+        }
     }
 
     private void analyzeComandoBreak(ComandoBreak comando) {
-        
+        if (!inLoop) {
+            throw new SemanticError("'break' utilizado fora de um laço.");
+        }
     }
 
     private void analyzeComandoLeitura(ComandoLeitura comando) {
-        
+        Expressao expressao = comando.getExpressao();
+
+        if (expressao instanceof ExpressaoFatorVariavel) {
+            String identificador = ((ExpressaoFatorVariavel) expressao).getIdentificador();
+
+            if (!symbolTable.contains(identificador)) {
+                throw new SemanticError("Variável " + identificador + " não declarada.");
+            }
+
+        } else if (expressao instanceof ExpressaoFatorChamadaFunction) {
+            String nomeFuncao = ((ExpressaoFatorChamadaFunction) expressao).getNome();
+
+            if (!symbolTable.contains(nomeFuncao)) {
+                throw new SemanticError("Função " + nomeFuncao + " não declarada.");
+            }
+
+        } else if (expressao instanceof ExpressaoCompleta) {
+            analyzeExpressao(expressao);
+        }
     }
 
     private void analyzeComandoChamadaProcedure(ComandoChamadaProcedure comando) {
+        String nomeProcedure = comando.getNome();
     
+        if (!symbolTable.contains(nomeProcedure)) {
+            throw new SemanticError("Procedure '" + nomeProcedure + "' não declarada.");
+        }
+    
+        String categoria = symbolTable.getEntry(nomeProcedure).getCategory();
+        if (!categoria.equalsIgnoreCase("procedimento")) {
+            throw new SemanticError("Identificador '" + nomeProcedure + "' não é uma procedure.");
+        }
+    
+        // Verifica quantidade de parâmetros
+        Object parametrosObj = symbolTable.getEntry(nomeProcedure).getParametros();
+        List<?> parametrosEsperados = parametrosObj instanceof List ? (List<?>) parametrosObj : List.of();
+        List<Expressao> argumentosRecebidos = comando.getParametros();
+    
+        if (parametrosEsperados.size() != argumentosRecebidos.size()) {
+            throw new SemanticError("Procedure '" + nomeProcedure + "' espera " + parametrosEsperados.size() +
+                    " argumento(s), mas recebeu " + argumentosRecebidos.size() + ".");
+        }
     }
-
+    
     private void analyzeComandoEnquanto(ComandoEnquanto comando) {
-        
+        boolean previousInLoop = inLoop;
+        inLoop = true;
+    
+        for (Comando cmd : comando.getComando()) {
+            analyzeComando(cmd);
+        }
+    
+        inLoop = previousInLoop;
     }
 
     private void analyzeComandoCondicional(ComandoCondicional comando) {

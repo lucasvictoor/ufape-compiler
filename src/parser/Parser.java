@@ -319,6 +319,20 @@ public class Parser {
         if (currToken.getTipo() == TokenType.TokenSymbol.PONTO_E_VIRGULA) {
             return null;
         }
+
+        if (currToken.getTipo() == TokenType.TokenReserved.CONTINUE) {
+            advance();
+            expect(TokenType.TokenSymbol.PONTO_E_VIRGULA);
+            advance();
+            return new ComandoContinue();
+        }
+
+        if (currToken.getTipo() == TokenType.TokenReserved.BREAK) {
+            advance();
+            expect(TokenType.TokenSymbol.PONTO_E_VIRGULA);
+            advance();
+            return new ComandoBreak(); 
+        }        
         
         throw new RuntimeException("Erro de sintaxe: comando inválido na linha " + currToken.getLinha() + " e coluna " + currToken.getColuna() + ". Encontrado: " + currToken.getTipo());
         //return null;
