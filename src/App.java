@@ -5,6 +5,7 @@ import parser.*;
 import semantic.SemanticAnalyzer;
 import symbol.SymbolTable;
 import ast.Programa;
+import codegen.*;
 
 public class App {
     public static void main(String[] args) throws Exception {
@@ -91,5 +92,11 @@ public class App {
         SemanticAnalyzer semanticAnalyzer = new SemanticAnalyzer(symbolTable);
         semanticAnalyzer.analyze(programa);
 
+        ThreeAdressCodeGenerator tacGenerator = new ThreeAdressCodeGenerator();
+        List<ThreeAdressCodeInstruction> tacInstructions = tacGenerator.generate(programa);
+
+        for (ThreeAdressCodeInstruction instruction : tacInstructions) {
+            System.out.println(instruction);
+        }
     }
 }
