@@ -31,10 +31,28 @@ public class ThreeAdressCodeInstruction {
 
     @Override
     public String toString() {
-        if (arg2 == null) {
-            return result + " = " + operation + " " + arg1;
+        if (operation.equals("LABEL")) {
+            return operation + " " + arg1; // Exibe apenas o rótulo
+        } else if (operation.equals("GOTO")) {
+            return operation + " " + arg1; // Exibe apenas o destino do salto
+        } else if (operation.equals("CALL")) {
+            return operation + " " + arg1; // Exibe a chamada de função
+        } else if (operation.equals("PARAM")) {
+            return operation + " " + arg1; // Exibe o parâmetro
+        } else if (operation.equals("IF_FALSE")) {
+            return operation + " " + arg1 + " GOTO " + result; // Exibe a condição e o destino
+        } else if (operation.equals("=")) {
+            if (arg2 == null) {
+                return result + " = " + arg1; // Atribuição simples
+            } else if (arg1 == null) {
+                return result + " = " + operation + " " + arg2; // Operação unária
+            } else {
+                return result + " = " + arg1 + " " + operation + " " + arg2; // Operação binária
+            }
+        } else if (arg2 == null) {
+            return result + " = " + operation + " " + arg1; // Operação unária ou atribuição
         } else {
-            return result + " = " + arg1 + " " + operation + " " + arg2;
-        }    
+            return result + " = " + arg1 + " " + operation + " " + arg2; // Operação binária
+        }
     }
 }
