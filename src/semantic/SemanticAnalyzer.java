@@ -4,6 +4,7 @@ import java.util.List;
 
 import ast.*;
 import symbol.SymbolTable;
+import symbol.SymbolTableEntry;
 
 public class SemanticAnalyzer {
     private SymbolTable symbolTable;
@@ -150,7 +151,58 @@ public class SemanticAnalyzer {
     }
 
     private void analyzeComandoCondicional(ComandoCondicional comando) {
+        // 1. Verificar a expressão condicional (deve ser booleana)
+        for (Expressao expressao : comando.getExpressao()) {
+            String tipoExpressao = inferExpressionType(expressao);
+            if (!"boolean".equalsIgnoreCase(tipoExpressao)) {
+                throw new SemanticError("Condição do 'if' deve ser uma expressão booleana. Encontrado: " + tipoExpressao);
+            }
+        }
     
+        // 2. Analisar os comandos do bloco if
+        for (Comando cmd : comando.getComandosIf()) {
+            analyzeComando(cmd);
+        }
+    
+        // 3. Analisar os comandos do bloco else (se existir)
+        if (comando.getComandosElse() != null && !comando.getComandosElse().isEmpty()) {
+            for (Comando cmd : comando.getComandosElse()) {
+                analyzeComando(cmd);
+            }
+        }
+    }
+
+    // Método auxiliar para inferir o tipo de uma expressão (Para o analyzeComandoCondicional)
+    private String inferExpressionType(Expressao expressao) {
+        if (expressao instanceof ExpressaoFatorAtributo) {
+            Object valor = ((ExpressaoFatorAtributo) expressao).getAtributo();
+            return (valor instanceof Boolean) ? "boolean" : "integer";
+        } else if (expressao instanceof ExpressaoFatorVariavel) {
+            String varName = ((ExpressaoFatorVariavel) expressao).getIdentificador();
+            SymbolTableEntry entry = symbolTable.getEntry(varName);
+            if (entry == null) {
+                throw new SemanticError("Variável '" + varName + "' não declarada");
+            }
+            return entry.getTipo();
+        } else if (expressao instanceof ExpressaoCompleta) {
+            // Verifica operadores relacionais (que sempre retornam boolean)
+            String operador = ((ExpressaoCompleta) expressao).getOperador();
+            if (operador.equals("==") || operador.equals("!=") || 
+                operador.equals("<") || operador.equals(">") ||
+                operador.equals("<=") || operador.equals(">=")) {
+                return "boolean";
+            }
+            // Para outros operadores, verificar compatibilidade de tipos
+            String tipoEsquerda = inferExpressionType(((ExpressaoCompleta) expressao).getEsquerda());
+            String tipoDireita = inferExpressionType(((ExpressaoCompleta) expressao).getDireita());
+            
+            if (!tipoEsquerda.equals(tipoDireita)) {
+                throw new SemanticError("Tipos incompatíveis em expressão: " + 
+                                    tipoEsquerda + " e " + tipoDireita);
+            }
+            return tipoEsquerda; // Retorna o tipo comum se forem iguais
+        }
+        return "unknown"; // Tipo padrão se não for possível determinar
     }
 
     private void analyzeComandoAtribuicao(ComandoAtribuicao comando) {
